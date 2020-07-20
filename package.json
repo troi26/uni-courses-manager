@@ -1,0 +1,39 @@
+{
+  "name": "uni-courses-manager",
+  "version": "1.0.0",
+  "description": "Courses manager back-end server application.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/troi26/uni-courses-manager.git"
+  },
+  "keywords": [
+    "courses",
+    "nodeJS",
+    "reactJS",
+    "ExpressJS"
+  ],
+  "author": "Trayan D Troev",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/troi26/uni-courses-manager/issues"
+  },
+  "homepage": "https://github.com/troi26/uni-courses-manager#readme",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "indicative": "^7.4.4",
+    "jsonwebtoken": "^8.5.1",
+    "moment": "^2.27.0",
+    "mongodb": "^3.5.8",
+    "mongoose": "^5.9.24"
+  },
+  "devDependencies": {
+    "livereload": "^0.9.1",
+    "nodemon": "^2.0.4"
+  }
+}
