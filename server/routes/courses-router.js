@@ -89,6 +89,16 @@ router.get('/:courseId', async function (req, res) {
     }
 });
 
+router.get('/lecturer/:userId', async function (req, res) {
+    const userId = req.params.userId;
+    try {
+        const courses = await Course.find({ lecturers: userId });
+        const coursesOwned = await Course.find({ owner: userId });
+        res.json(courses.concat(coursesOwned));
+    } catch (err) {
+        sendErrorResponse(req, res, 500, err.message, err);
+    }
+});
 
 router.put('/:userId/:courseId', async function (req, res) {
     const userId = req.params.userId;
