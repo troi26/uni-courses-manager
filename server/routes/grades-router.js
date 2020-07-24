@@ -14,11 +14,9 @@ const Grade = db.grade;
 
 const router = express.Router();
 
-router.get('/:username', async function(req, res) {
-    const username = req.params.username;
-
+router.get('/', async function(req, res) {
     try {
-        const grades = await Grade.findOne({ username });
+        const grades = await Grade.find();
         res.json(grades);
     } catch (err) {
         // reponse with the caught error
@@ -27,12 +25,37 @@ router.get('/:username', async function(req, res) {
     }
 });
 
-router.get('/:username/:courseId', async function(req, res) {
-    const username = req.params.username;
+router.get('/:gradeId', async function(req, res) {
+    const gradeId = req.params.gradeId;
+
+    try {
+        const grades = await Grade.findById(gradeId);
+        res.json(grades);
+    } catch (err) {
+        // reponse with the caught error
+        console.log(err);
+        sendErrorResponse(req, res, 500, `Server error: ${err.message}`, err);
+    }
+});
+
+router.get('/byuser/:userId', async function(req, res) {
+    const userId = req.params.userId;
+
+    try {
+        const grades = await Grade.find({ userId });
+        res.json(grades);
+    } catch (err) {
+        // reponse with the caught error
+        console.log(err);
+        sendErrorResponse(req, res, 500, `Server error: ${err.message}`, err);
+    }
+});
+
+router.get('/bycourse/:courseId', async function(req, res) {
     const courseId = req.params.courseId;
 
     try {
-        const grades = await Grade.findOne({ username, courseId });
+        const grades = await Grade.find({ courseId });
         res.json(grades);
     } catch (err) {
         // reponse with the caught error
@@ -40,6 +63,38 @@ router.get('/:username/:courseId', async function(req, res) {
         sendErrorResponse(req, res, 500, `Server error: ${err.message}`, err);
     }
 });
+
+router.get('/user/:userId/:courseId', async function(req, res) {
+    const userId = req.params.userId;
+    const courseId = req.params.courseId;
+
+    try {
+        const grades = await Grade.findOne({ userId, courseId });
+        res.json(grades);
+    } catch (err) {
+        // reponse with the caught error
+        console.log(err);
+        sendErrorResponse(req, res, 500, `Server error: ${err.message}`, err);
+    }
+});
+
+// router.get('/bycourses/bycourses/bycourses', async (req, res) => {
+//     const courseIds = req.query.courseIds;
+//     console.log(courseIds);
+//     // for (let id of courseIds) {
+//     //     console.log(id);
+//     // }
+//     // const courseIds = req.params.courseIds;
+//     try {
+//         // const grades = await Grade.find({courseId: { $in: courseIds }});
+//         const grade = await Grade.findOne({courseId: courseIds[0]});
+//         return grade;
+//     } catch (err) {
+//         // reponse with the caught error
+//         console.log(err);
+//         sendErrorResponse(req, res, 500, `Server error: ${err.message}`, err);
+//     }
+// });
 
 router.post('/', async function(req, res) {
     const grade = req.body;
@@ -51,10 +106,10 @@ router.post('/', async function(req, res) {
                 message: `Course with ID=${grade.courseId} does not exists.`
             };
         }
-        const student = await Course.findById(grade.username);
+        const student = await User.findById(grade.userId);
         if (!student || !student.roles.includes(roles.STUDENT)) {
             throw {
-                message: `Student with username=${grade.username} does not exists.`
+                message: `Student with ID=${grade.userId} does not exists.`
             };
         }
 
@@ -72,6 +127,7 @@ router.post('/', async function(req, res) {
 router.put('/:userId/:gradeId', async function(req, res) {
     const grade = req.body;
     const gradeId = req.params.gradeId;
+    const userId = req.params.userId;
 
     try {
         if (gradeId !== grade.id) {
@@ -99,17 +155,16 @@ router.put('/:userId/:gradeId', async function(req, res) {
             };
         }
 
-        const course = await User.findById(grade.username);
-        if (!course) {
+        const user = await User.findById(userId);
+        if (!user) {
             throw {
-                message: `Student with username=${grade.username} does not exists.`
+                message: `Student with ID=${userId} does not exists.`
             };
         }
 
-        const gradeModel = new Grade(grade);
-        const created = await gradeModel.save();
+        await Grade.findByIdAndUpdate(prevGrade._id, grade);
 
-        res.json(created);
+        res.json(grade);
     } catch (err) {
         // reponse with the caught error
         console.log(err);
@@ -117,6 +172,7 @@ router.put('/:userId/:gradeId', async function(req, res) {
     }
 });
 
+module.exports = router;
 // try {
 
 // } catch (err) {
