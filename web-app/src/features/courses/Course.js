@@ -556,7 +556,7 @@ export const Course = () => {
                                         maxHeight: "20em",
                                         overflowY: 'scroll',
                                     }}>
-                                        { editedValues.lecturersUsers.map(lect => <List.Item key={`lect-${lect}`}>
+                                        { editedValues.lecturersUsers.map(lect => <List.Item key={`lect-${lect.id}`}>
                                             <Card fluid>
                                                 <Card.Content>
                                                     <Card.Header>{`${lect.firstName} ${lect.lastName}`}</Card.Header>
