@@ -8,7 +8,7 @@ import { domain } from '../../api/server.connection';
 import { MyFiltersComponent } from './MyFiltersComponent';
 import { roles } from '../register/Register';
 import { Segment, Modal, Dropdown, Button, Icon, Header } from 'semantic-ui-react';
-import { cancelEnrolmentIntoCourse, enrolIntoCourse } from '../../api/courses.api';
+import { cancelEnrolmentIntoCourse, enrolIntoCourse, transferCourse } from '../../api/courses.api';
 
 export function CoursesList(props) {
 
@@ -100,6 +100,21 @@ export function CoursesList(props) {
     setTransferDetails(result);
   }
 
+  const handleCourseTransfer = async (courseId, userFrom, userTo) => {
+      try {
+        const enrolled = await transferCourse(courseId, userFrom, userTo, logged.token);
+        const newCourses = courses.map(c => c.id === courseId
+          ? {
+            ...c,
+            owner: userTo,
+          }
+          : c)
+          setCourses(newCourses);
+      } catch(err) {
+        console.log(err);
+      }
+  };
+
   const handleCourseEnrol = async (userId, courseId) => {
       try {
         const enrolled = await enrolIntoCourse(userId, courseId, logged.token);
@@ -157,7 +172,10 @@ export function CoursesList(props) {
           />
         </Modal.Content>
           <Modal.Actions>
-            <Button color='blue' onClick={() => setTransferDetails(null)} inverted>
+            <Button color='blue' onClick={() => {
+              handleCourseTransfer(transferDetails.id, transferDetails.owner, transferDetails.toUser);
+              setTransferDetails(null);
+            }} inverted>
               <Icon name='checkmark' /> Transfer
             </Button>
           </Modal.Actions>

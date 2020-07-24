@@ -54,3 +54,13 @@ export const cancelEnrolmentIntoCourse = async (userId, courseId, token) => {
         throw err;
     }
 }
+
+export const transferCourse = async (courseId, userFrom, userTo, token) => {
+    try {
+        const endpoint = `${domain}/api/courses/transfer/${courseId}/${userFrom}/${userTo}/`;
+        const response = await axios.patch(endpoint, buildTokenAuthHeader(token));
+        return response.data;
+    } catch (err) {
+        throw err;
+    }
+}
