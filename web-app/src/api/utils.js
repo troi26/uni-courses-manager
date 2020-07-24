@@ -13,3 +13,12 @@ export const buildTokenAuthHeaderJSON = () => {
         }
     };
 }
+
+export const buildPOSTWithJWTConfig = (data, token) => {
+    return {
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        }
+    };
+}
