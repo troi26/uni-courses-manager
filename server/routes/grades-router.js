@@ -6,6 +6,7 @@ const { Router } = require('express');
 const e = require('express');
 const { user } = require('../utils/db');
 const sendErrorResponse = require("./utils").sendErrorResponse;
+const authenticateTokenMiddleware = require('../middlewares/auth.middleware');
 const roles = require('../models/user').roles;
 const Course = db.course;
 const User = db.user;
@@ -14,7 +15,7 @@ const Grade = db.grade;
 
 const router = express.Router();
 
-router.get('/', async function(req, res) {
+router.get('/', authenticateTokenMiddleware, async function(req, res) {
     try {
         const grades = await Grade.find();
         res.json(grades);
@@ -38,7 +39,7 @@ router.get('/:gradeId', async function(req, res) {
     }
 });
 
-router.get('/byuser/:userId', async function(req, res) {
+router.get('/byuser/:userId', authenticateTokenMiddleware, async function(req, res) {
     const userId = req.params.userId;
 
     try {
@@ -51,7 +52,7 @@ router.get('/byuser/:userId', async function(req, res) {
     }
 });
 
-router.get('/bycourse/:courseId', async function(req, res) {
+router.get('/bycourse/:courseId', authenticateTokenMiddleware, async function(req, res) {
     const courseId = req.params.courseId;
 
     try {
@@ -64,7 +65,7 @@ router.get('/bycourse/:courseId', async function(req, res) {
     }
 });
 
-router.get('/user/:userId/:courseId', async function(req, res) {
+router.get('/user/:userId/:courseId', authenticateTokenMiddleware, async function(req, res) {
     const userId = req.params.userId;
     const courseId = req.params.courseId;
 
@@ -78,25 +79,7 @@ router.get('/user/:userId/:courseId', async function(req, res) {
     }
 });
 
-// router.get('/bycourses/bycourses/bycourses', async (req, res) => {
-//     const courseIds = req.query.courseIds;
-//     console.log(courseIds);
-//     // for (let id of courseIds) {
-//     //     console.log(id);
-//     // }
-//     // const courseIds = req.params.courseIds;
-//     try {
-//         // const grades = await Grade.find({courseId: { $in: courseIds }});
-//         const grade = await Grade.findOne({courseId: courseIds[0]});
-//         return grade;
-//     } catch (err) {
-//         // reponse with the caught error
-//         console.log(err);
-//         sendErrorResponse(req, res, 500, `Server error: ${err.message}`, err);
-//     }
-// });
-
-router.post('/', async function(req, res) {
+router.post('/', authenticateTokenMiddleware, async function(req, res) {
     const grade = req.body;
     console.log(grade);
 
@@ -125,7 +108,7 @@ router.post('/', async function(req, res) {
 });
 
 
-router.put('/:userId/:gradeId', async function(req, res) {
+router.put('/:userId/:gradeId', authenticateTokenMiddleware, async function(req, res) {
     const grade = req.body;
     const gradeId = req.params.gradeId;
     const userId = req.params.userId;
@@ -173,7 +156,7 @@ router.put('/:userId/:gradeId', async function(req, res) {
     }
 });
 
-router.delete('/:gradeId', async (req, res) => {
+router.delete('/:gradeId', authenticateTokenMiddleware, async (req, res) => {
     const gradeId = req.params.gradeId;
     
     try {

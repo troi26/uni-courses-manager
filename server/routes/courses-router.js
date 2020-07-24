@@ -7,6 +7,7 @@ const { Router } = require('express');
 const e = require('express');
 const { user, course } = require('../utils/db');
 const sendErrorResponse = require("./utils").sendErrorResponse;
+const authenticateTokenMiddleware = require('../middlewares/auth.middleware');
 const roles = require('../models/user').roles;
 const Course = db.course;
 const User = db.user;
@@ -22,7 +23,7 @@ const specialties = {
     AM: "Applied Mathematics"
 };
 
-router.post('/', async function (req, res) {
+router.post('/', authenticateTokenMiddleware, async function (req, res) {
     // validate user`s data
     const course = req.body;
     const userId = course.owner;
@@ -62,7 +63,7 @@ router.post('/', async function (req, res) {
     }
 });
 
-router.get('/', async function (req, res) {
+router.get('/', authenticateTokenMiddleware, async function (req, res) {
     // validate user`s data
     try {
         const result = await Course.find();
@@ -74,7 +75,7 @@ router.get('/', async function (req, res) {
     }
 });
 
-router.get('/:courseId', async function (req, res) {
+router.get('/:courseId', authenticateTokenMiddleware, async function (req, res) {
     const courseId = req.params.courseId;
     try {
         const course = await Course.findById(courseId);
@@ -89,7 +90,7 @@ router.get('/:courseId', async function (req, res) {
     }
 });
 
-router.get('/lecturer/:userId', async function (req, res) {
+router.get('/lecturer/:userId', authenticateTokenMiddleware, async function (req, res) {
     const userId = req.params.userId;
     try {
         const courses = await Course.find({ lecturers: userId });
@@ -100,11 +101,12 @@ router.get('/lecturer/:userId', async function (req, res) {
     }
 });
 
-router.put('/:userId/:courseId', async function (req, res) {
+router.put('/:userId/:courseId', authenticateTokenMiddleware, async function (req, res) {
     console.log("HERE");
     const userId = req.params.userId;
     const courseId = req.params.courseId;
     const modifiedCourse = req.body;
+    const loggedId = req.user.sub;
 
     try {
         if (courseId !== modifiedCourse.id) {
@@ -113,9 +115,9 @@ router.put('/:userId/:courseId', async function (req, res) {
             }
         }
 
-        const user = await User.findById(userId);
+        const logged = await User.findById(loggedId);
         
-        if (userId !== modifiedCourse.owner && !user.roles.includes(roles.ADMIN)) {
+        if (loggedId !== modifiedCourse.owner && !logged.roles.includes(roles.ADMIN)) {
             throw {
                 message: "Not authorized for this action."
             };
@@ -141,14 +143,22 @@ router.put('/:userId/:courseId', async function (req, res) {
     }
 });
 
-router.patch("/transfer/:courseId/:userFrom/:userTo", async function (req, res) {
+router.patch("/transfer/:courseId/:userFrom/:userTo", authenticateTokenMiddleware, async function (req, res) {
     const userFromId = req.params.userFrom;
     const userToId = req.params.userTo;
     const courseId = req.params.courseId;
+    const loggedId = req.user.sub;
     try {
         const course = await Course.findById(courseId);
         const userFrom = await User.findById(userFromId);
         const userTo = await User.findById(userToId);
+        const logged = await User.findById(loggedId);
+
+        if (!loggedId) {
+            throw {
+                message: "Logged user can not be found."
+            }
+        }
 
         if (!userFrom) {
             throw {
@@ -162,7 +172,7 @@ router.patch("/transfer/:courseId/:userFrom/:userTo", async function (req, res) 
             }
         }
     
-        if (userFromId !== course.owner && !userFrom.roles.includes(roles.ADMIN)) {
+        if (!(loggedId === userFromId && userFromId === course.owner) && !logged.roles.includes(roles.ADMIN)) {
             throw {
                 message: "Not authorized for this action."
             }
@@ -178,15 +188,16 @@ router.patch("/transfer/:courseId/:userFrom/:userTo", async function (req, res) 
 });
 
 // Remove a course if its yours or if you are an admin
-router.delete('/:userId/:courseId', async function (req, res) {
+router.delete('/:userId/:courseId', authenticateTokenMiddleware, async function (req, res) {
     const userId = req.params.userId;
     const courseId = req.params.courseId;
+    const loggedId = req.user.sub;
     try {
-        const user = await User.findById(userId);
 
         const course = await Course.findById(courseId);
+        const logged = await User.findById(loggedId);
         
-        if (userId !== course.owner && !user.roles.includes(roles.ADMIN)) {
+        if (!(loggedId === userId && userId !== course.owner) && !logged.roles.includes(roles.ADMIN)) {
             throw {
                 message: "Not authorized for this action."
             };
@@ -212,20 +223,36 @@ router.delete('/:userId/:courseId', async function (req, res) {
 });
 
 // Enrol for the course
-router.patch("/enrol/:courseId/:userId", async function (req, res) {
+router.patch("/enrol/:courseId/:userId", authenticateTokenMiddleware, async function (req, res) {
     const courseId = req.params.courseId;
     const userId = req.params.userId;
+    const loggedId = req.user.sub;
 
     try {
         const user = await User.findById(userId);
         const course = await Course.findById(courseId);
+        const logged = await User.findById(loggedId);
+
         if (!user) {
             throw {
                 message: "Specified user does not exist.",
             };
         }
 
-        if (!user.roles.includes(roles.STUDENT)) {
+        if (!logged) {
+            throw {
+                message: "Logged user does not exist.",
+            };
+        }
+
+        if (loggedId !== userId && !logged.roles.includes(roles.ADMIN) &&
+            loggedId !== course.owner) {
+            throw {
+                message: "Not authorized for this action.",
+            };
+        }
+
+        if (!logged.roles.includes(roles.STUDENT)) {
             throw {
                 message: "Specified user has to be a student.",
             };
@@ -256,17 +283,26 @@ router.patch("/enrol/:courseId/:userId", async function (req, res) {
 });
 
 // Close course enrolment
-router.patch("/cancelenrolment/:courseId/:userId", async function (req, res) {
+router.patch("/cancelenrolment/:courseId/:userId", authenticateTokenMiddleware, async function (req, res) {
     // Check if logged user is owner of the course or a lecturer of it
     const courseId = req.params.courseId;
     const userId = req.params.userId;
+    const loggedId = req.user.sub;
 
     try {
         const course = await Course.findById(courseId);
+        const logged = await User.findById(loggedId);
 
         if (!course) {
             throw {
                 message: "Specified course does not exist.",
+            };
+        }
+
+        if (loggedId !== userId && !logged.roles.includes(roles.ADMIN) &&
+            loggedId !== course.owner) {
+            throw {
+                message: "Not authorized for this action.",
             };
         }
 

@@ -3,7 +3,6 @@ var cors = require('cors')
 const bodyParser = require('body-parser');
 const usersRouter = require('./routes/users-router').router;
 const coursesRouter = require('./routes/courses-router');
-// const chatRouter = require('./routes/chat-router');
 const gradesRouter = require('./routes/grades-router');
 const sendErrorResponse = require('./routes/utils.js').sendErrorResponse;
 const db_name = 'courses-manager';
@@ -14,6 +13,11 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
+var http = require('http');
+var server = http.createServer(app);
+var io = require('socket.io').listen(server);
+const chatRouter = require('./routes/chat-router')(io);
+
 const port = 9010;
 
 // app.use(express.json({limit: '50mb'}));
@@ -53,7 +57,7 @@ app.use(function (req, res, next) {
 
 app
     .use('/api/courses', coursesRouter)
-    // .use('/api/users/chat', chatRouter)
+    .use('/api/chat', chatRouter)
     .use('/api/grades', gradesRouter)
     .use('/api/users', usersRouter);
 
@@ -62,7 +66,7 @@ db.mongoose.connect("mongodb://localhost:27017/" + db_name, connectionOptions)
     .then(() => {
         console.log(`Connection established to ${db_name}.`);
             
-        app.listen(port, () => {
+        server.listen(port, () => {
             console.log(`Example app listening at http://localhost:${port}`)
         });
     });

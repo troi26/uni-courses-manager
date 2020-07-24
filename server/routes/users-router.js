@@ -75,7 +75,7 @@ router.get("/", authenticateTokenMiddleware, async (req, res) => {
 });
 
 // get user by username
-router.get("/:userId", async (req, res) => {
+router.get("/:userId", authenticateTokenMiddleware, async (req, res) => {
     const userId = req.params.userId;
     try {
         const user = await User.findById(userId);
@@ -91,30 +91,29 @@ router.get("/:userId", async (req, res) => {
 });
 
 // delete user by username if admin or yourself
-router.delete("/:username", authenticateTokenMiddleware, async (req, res) => {
-    const myUsername = req.body.username;
-    const username = req.params.username;
-    if (myUsername === username) {
-        const deletedUser = await User.deleteOne({ username });
-        res.status(200).location("http://localhost:9010/api/users/auth/login").json(deletedUser);
-        return;
+router.delete("/:userId", authenticateTokenMiddleware, async (req, res) => {
+    const loggedId = req.user.sub;
+    const userId = req.params.userId;
+    try {
+        const logged = await User.findById(loggedId);
+
+        if (logged.roles.includes(roles.ADMIN) || logged.id === userId) {
+            const deletedUser = await User.findByIdAndDelete(userId);
+            res.json(deletedUser);
+        } else {
+            throw {
+                message: "Not authorized to delete users",
+            };
+        } 
+            
+    } catch (err) {
+        sendErrorResponse(req, res, 500, "Not authorized to delete a user other than yourself!", err);
+
     }
-
-    const myRole = req.body.role;
-    if (myRole === roles.ADMIN) {
-        const deletedUser = await User.deleteOne({ username });
-        res.json(deletedUser);
-
-        // TODO: Check if JWT invalidation needed here!!!
-        return;
-    }
-    
-    sendErrorResponse(req, res, 500, "Not authorized to delete a user other than yourself!", err);
-
 });
 
 // modify user data if myself or admin
-router.put("/:userId", async (req, res) => {
+router.put("/:userId", authenticateTokenMiddleware, async (req, res) => {
     const newData = req.body;
     const userId = req.params.userId;
     try {
@@ -134,15 +133,13 @@ router.put("/:userId", async (req, res) => {
         console.log(user);
         await User.findByIdAndUpdate(newData.id, newData);
 
-        // TODO: Check if JWT refresh needed here!!!
-
         res.json(newData);
     } catch (err) {
         sendErrorResponse(req, res, 500, err.message, err);
     }
 });
 
-router.patch('/auth/passwordchange/:userId/:currentPassword/:newPassword', async (req, res) => {
+router.patch('/auth/passwordchange/:userId/:currentPassword/:newPassword', authenticateTokenMiddleware, async (req, res) => {
     const newData = req.body;
     const userId = req.params.userId;
     const currentPassword = req.params.currentPassword;

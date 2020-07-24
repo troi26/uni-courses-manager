@@ -9,6 +9,7 @@ db.mongoose = mongoose;
 db.user = require("../models/user").User;
 db.course = require("../models/course");
 db.grade = require("../models/grade").Grade;
+db.message = require("../models/message");
 
 db.ROLES = ["teacher", "admin", "student"];
 
