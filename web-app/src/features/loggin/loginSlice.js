@@ -24,6 +24,15 @@ export const loginSlice = createSlice({
             createStoreSlice("Logged");
         }
     },
+    changeToken: (state, action) => {
+        console.log("TOKEN: ", action.payload);
+        state.logged.token = action.payload;
+        storage.set("Logged", {
+            ...state.logged,
+            token: action.payload
+        });
+
+    },
     login: (state, action) => {
       // Redux Toolkit allows us to write "mutating" logic in reducers. It
       // doesn't actually mutate the state because it uses the Immer library,
@@ -63,7 +72,7 @@ export const loginSlice = createSlice({
   },
 });
 
-export const { login, logout, addError, loadLogged } = loginSlice.actions;
+export const { login, logout, addError, loadLogged, changeToken } = loginSlice.actions;
 
 // The function below is called a thunk and allows us to perform async logic. It
 // can be dispatched like a regular action: `dispatch(incrementAsync(10))`. This
