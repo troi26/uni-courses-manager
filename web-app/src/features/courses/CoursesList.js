@@ -8,6 +8,7 @@ import { domain } from '../../api/server.connection';
 import { MyFiltersComponent } from './MyFiltersComponent';
 import { roles } from '../register/Register';
 import { Segment, Modal, Dropdown, Button, Icon, Header } from 'semantic-ui-react';
+import { cancelEnrolmentIntoCourse, enrolIntoCourse } from '../../api/courses.api';
 
 export function CoursesList(props) {
 
@@ -98,7 +99,37 @@ export function CoursesList(props) {
     result.toUser = course.owner;
     setTransferDetails(result);
   }
-  
+
+  const handleCourseEnrol = async (userId, courseId) => {
+      try {
+        const enrolled = await enrolIntoCourse(userId, courseId, logged.token);
+        const newCourses = courses.map(c => c.id === courseId
+          ? {
+            ...c,
+            enrolments: [userId].concat(c.enrolments),
+          }
+          : c)
+          setCourses(newCourses);
+      } catch(err) {
+        console.log(err);
+      }
+  };
+
+  const handleCancelCourseEnrol = async (userId, courseId) => {
+      try {
+        const canceled = await cancelEnrolmentIntoCourse(userId, courseId, logged.token);
+        const newCourses = courses.map(c => c.id === courseId
+          ? {
+            ...c,
+            enrolments: c.enrolments.filter(e => e !== userId),
+          }
+          : c)
+        setCourses(newCourses);
+      } catch(err) {
+        console.log(err);
+      }
+  };
+
   return (
     <React.Fragment>
       <Modal
@@ -148,9 +179,9 @@ export function CoursesList(props) {
         {...props}
         logged={logged}
         courses={handlefilterByCourseName(handlefilterByLecturer(handlefilterByOwner(courses)))}
-        onCourseEnroll={() => {}}
-        onCancelCourseEnroll={() => {}}
         onOpenTransferModal={handleCourseTransferModalOpen}
+        onCourseEnrol={handleCourseEnrol}
+        onCancelCourseEnrol={handleCancelCourseEnrol}
       />
     </React.Fragment>
   );

@@ -21,20 +21,22 @@ export function CoursesListView(props) {
             name: "Enrol",
             color: "green",
             isShown: (course) => {
-                return props.logged.roles.includes(roles.STUDENT) && !course.enrolments.includes(props.logged.id);
+                return moment(course.startDate).diff(moment(), 'seconds') > 0 &&
+                props.logged.roles.includes(roles.STUDENT) && !course.enrolments.includes(props.logged.id);
             },
-            onClick: (event, studentId, course) => {
-                props.onCourseEnroll(studentId, course.id);
+            onClick: (event, course) => {
+                props.onCourseEnrol(props.logged.id, course.id);
             },
         }, {
             key: "course-cancel-enroll",
             name: "Cancel",
             color: "red",
             isShown: (course) => {
-                return props.logged.roles.includes(roles.STUDENT) && course.enrolments.includes(props.logged.id);
+                return moment(course.startDate).diff(moment(), 'seconds') > 0 &&
+                props.logged.roles.includes(roles.STUDENT) && course.enrolments.includes(props.logged.id);
             },
-            onClick: (event, studentId, course) => {
-                props.onCancelCourseEnroll(studentId, course.id);
+            onClick: (event, course) => {
+                props.onCancelCourseEnrol(props.logged.id, course.id);
             }
         },{
             key: "course-open",
