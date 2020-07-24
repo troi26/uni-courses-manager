@@ -12,6 +12,8 @@ import { CoursesList } from "./features/courses/CoursesList";
 import { selectLogged, loadLogged, selectLoaded } from './features/loggin/loginSlice';
 import { useSelector, useDispatch } from 'react-redux';
 import { Course } from './features/courses/Course';
+import { CourseCreator } from './features/courses/CourseCreation';
+import { User } from './features/users/User';
 // import {createBrowserHistory} from "history";
 
 // export const history = createBrowserHistory();
@@ -44,6 +46,12 @@ function App() {
               : <Redirect to={"/courses"} />
             }
           </Route>
+          <Route exact path="/courses/create" >
+            { !logged
+              ? <Redirect to={"/auth/login"} />
+              : <CourseCreator />
+            }
+          </Route>
           <Route exact path="/courses/:courseId" >
             { !logged
               ? <Redirect to={"/auth/login"} />
@@ -54,6 +62,12 @@ function App() {
             { !logged
               ? <Redirect to={"/auth/login"} />
               : <CoursesList />
+            }
+          </Route>
+          <Route exact path="/users/:userId" >
+            { !logged
+              ? <Redirect to={"/auth/login"} />
+              : <User />
             }
           </Route>
           <Route path="/*">

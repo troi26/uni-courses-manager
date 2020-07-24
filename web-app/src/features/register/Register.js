@@ -163,18 +163,6 @@ export const Register = () => {
             console.log("REGISTER ERROR: ", err);
             setErrors(err.response.data.message);
         }
-        // registerCall(data).then(res => {
-        //     if (res.ok) {
-        //         history.push("/auth/login");
-        //         return res.json();
-        //     }
-        //     console.log("THROWING: "    );
-        //     throw res.json();
-        // }).then(data => console.log("REGISTER SUCCESS: ", data
-        // )).catch(err => {
-        //     console.log("REGISTER ERROR: ", err);
-        //     setErrors(err.message)
-        // });
     };
 
     return (

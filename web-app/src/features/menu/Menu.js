@@ -57,10 +57,17 @@ export const HeaderMenu = (props) => {
                             >Courses</Menu.Item>
                         </NavLink> */}
                         <Menu.Menu position='right'>
+                            
+                            <NavLink to={`/users/${logged.id}`}>
+                                <Menu.Item
+                                name={'accout-data'}
+                                active={activeItem === 'accout-data'}
+                                onClick={(e, {name}) => setActiveItem(name)}>{`(${logged.username}) ${logged.firstName} ${logged.lastName}`}</Menu.Item>
+                            </NavLink>
                             <Menu.Item
-                                name='login'
-                                active={activeItem === 'login'}
-                                onClick={() => setActiveItem("login")}
+                                name='logout'
+                                active={activeItem === 'logout'}
+                                onClick={() => handleLogout()}
                             >Logout</Menu.Item>
                         </Menu.Menu>
                     </React.Fragment>
