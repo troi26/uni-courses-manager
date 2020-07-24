@@ -102,6 +102,34 @@ export const Course = () => {
         return false;
     };
 
+    const handleStudentEnrolmentCancel = async (enrolmentId) => {
+        try {
+            console.log("REMOVED_ENROLMENT: ", enrolmentId);
+            // const response = await addLecturerToCourse(course.id, newLecturerId, logged.token);
+            const modified = {
+                id: editedValues.id,
+                name: editedValues.name,
+                owner: editedValues.owner,
+                description: editedValues.description,
+                enrolmentLimit: course.enrolmentLimit,
+                hasEntranceTest: editedValues.hasEntranceTest,
+                targetSpeciality: editedValues.targetSpeciality,
+                enrolments: editedValues.enrolments.filter(eId => eId !== enrolmentId),
+                startDate: editedValues.startDate,
+                lecturers: editedValues.lecturers,
+            };
+            // console.log("MOD_COURSE: ", modified);
+            // const response = await modifyCourse(modified, logged.id, logged.token);
+            setEditedValues({
+                ...editedValues,
+                enrolments: modified.enrolments.filter(u => u.id !== enrolmentId),
+                enrolmentsUsers: editedValues.enrolmentsUsers.filter(u => u.id !== enrolmentId)
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
     const rederEnrolments = () => {
         return editedValues.enrolmentsUsers.map(e => {
             const grade = grades.find(g => g.courseId === course.id && g.userId === e.id);
@@ -128,7 +156,9 @@ export const Course = () => {
                                     })
                                 }}></Button>
                         </Segment>
-                        <Button fluid floated={"right"} color={"red"} icon={"delete"}></Button>
+                        <Button fluid floated={"right"} color={"red"} icon={"delete"}
+                            onClick={() => handleStudentEnrolmentCancel(e.id)}
+                        ></Button>
                     </Card.Content>
                 </Card>
             </List.Item>)
@@ -240,7 +270,7 @@ export const Course = () => {
             // const response = await modifyCourse(modified, logged.id, logged.token);
             setEditedValues({
                 ...editedValues,
-                lecturers: modified.lecturers,
+                lecturers: modified.lecturers.filter(u => u !== remLecturerId),
                 lecturersUsers: editedValues.lecturersUsers.filter(u => u.id !== remLecturerId)
             });
         } catch (err) {
