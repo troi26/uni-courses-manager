@@ -2,13 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router";
 import { useParams } from "react-router-dom";
 import { Grid, Table, Segment, Card, Button, Dimmer, Loader, Input, Dropdown, List, Checkbox, TextArea, Label, SegmentInline, Modal, Header, Icon } from "semantic-ui-react";
-import { loadCourseById } from "../../api/courses.api";
+import { loadCourseById, modifyCourse } from "../../api/courses.api";
 
 import moment from 'moment';
 import { loadAllUsers, loadUserById } from "../../api/users.api";
 import { useSelector } from "react-redux";
 import { selectLogged } from "../loggin/loginSlice";
 import { loadGradesByCourse, addGrade, modifyGrade, removeGrade } from "../../api/grades.api";
+import { roles } from "../register/Register";
 
 export const specialties = {
     CS: "Computer Sciences",
@@ -32,6 +33,7 @@ export const Course = () => {
     // console.log("COURSE: ", props);
     const logged = useSelector(selectLogged);
     const [course, setCourse] = useState(null); 
+    const [teachers, setTeachers] = useState(null);
     const [error, setError] = useState(null);
     const [isCourseLoaded, setIsLoaded] = useState(false);
     const [loading, setLoadind] = useState(true);
@@ -40,6 +42,7 @@ export const Course = () => {
     const [editedValues, setEditedValues] = useState({});
     const [grades, setGrades] = useState([]);
     const [gradingDetails, setGradingDetails] = useState(null);
+    const [lecturerAddition, setLecturerAddition] = useState(null);
 
     useEffect(() => {
         const loadCourse = async () => {
@@ -64,6 +67,7 @@ export const Course = () => {
                 courseData.enrolmentsUsers = coursEnrolments;
                 courseData.lecturersUsers = coursLecturers;
                 courseData.ownerUser = courseOwner;
+                setTeachers(responseUsers.filter(u => u.roles.includes(roles.TEACHER)));
                 setCourse(courseData);
                 setEditedValues(courseData);
                 // setIsLoaded(true);
@@ -188,6 +192,85 @@ export const Course = () => {
         }
     }
 
+    const handleLecturerAddition = async (newLecturerId) => {
+        try {
+            console.log("NEW_LECTURER: ", newLecturerId);
+            // const response = await addLecturerToCourse(course.id, newLecturerId, logged.token);
+            const modified = {
+                id: editedValues.id,
+                name: editedValues.name,
+                owner: editedValues.owner,
+                description: editedValues.description,
+                enrolmentLimit: course.enrolmentLimit,
+                hasEntranceTest: editedValues.hasEntranceTest,
+                targetSpeciality: editedValues.targetSpeciality,
+                enrolments: editedValues.enrolments,
+                startDate: editedValues.startDate,
+                lecturers: [newLecturerId].concat(editedValues.lecturers),
+            };
+            // console.log("MOD_COURSE: ", modified);
+            // const response = await modifyCourse(modified, logged.id, logged.token);
+            setEditedValues({
+                ...editedValues,
+                lecturers: modified.lecturers,
+                lecturersUsers: [teachers.find(u => u.id === newLecturerId)].concat(editedValues.lecturersUsers),
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    const handleLecturerDeletion = (remLecturerId) => {
+        try {
+            console.log("REMOVED_LECTURER: ", remLecturerId);
+            // const response = await addLecturerToCourse(course.id, newLecturerId, logged.token);
+            const modified = {
+                id: editedValues.id,
+                name: editedValues.name,
+                owner: editedValues.owner,
+                description: editedValues.description,
+                enrolmentLimit: course.enrolmentLimit,
+                hasEntranceTest: editedValues.hasEntranceTest,
+                targetSpeciality: editedValues.targetSpeciality,
+                enrolments: editedValues.enrolments,
+                startDate: editedValues.startDate,
+                lecturers: editedValues.lecturers.filter(lId => lId !== remLecturerId),
+            };
+            // console.log("MOD_COURSE: ", modified);
+            // const response = await modifyCourse(modified, logged.id, logged.token);
+            setEditedValues({
+                ...editedValues,
+                lecturers: modified.lecturers,
+                lecturersUsers: editedValues.lecturersUsers.filter(u => u.id !== remLecturerId)
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+
+    const saveCourseChanges = async () => {
+        try {
+            const modified = {
+                id: editedValues.id,
+                name: editedValues.name,
+                owner: editedValues.owner,
+                description: editedValues.description,
+                enrolmentLimit: course.enrolmentLimit,
+                hasEntranceTest: editedValues.hasEntranceTest,
+                targetSpeciality: editedValues.targetSpeciality,
+                enrolments: editedValues.enrolments,
+                startDate: editedValues.startDate,
+                lecturers: editedValues.lecturers,
+            };
+            const response = await modifyCourse(modified, logged.id, logged.token);
+            setCourse(editedValues);
+        } catch (err) {
+            console.error(err);
+        }
+
+    };
+
     return (
         <React.Fragment>
             <Modal
@@ -199,7 +282,7 @@ export const Course = () => {
                         <h3>{`Enter ${gradingDetails.firstName} ${gradingDetails.lastName}\`s grade`}</h3>
                         <Dropdown
                             fluid
-                            placeholder={"Transfer to"}
+                            placeholder={"Select a grade"}
                             search
                             selection
                             options={[-1, 2, 3, 4, 5, 6].map(u => ({
@@ -223,6 +306,41 @@ export const Course = () => {
                             setGradingDetails(null);
                         }} inverted>
                         <Icon name='checkmark' /> Grade
+                    </Button>
+                </Modal.Actions>
+            </Modal>
+            <Modal
+                open={ lecturerAddition !== null } closeIcon onClose={() => setLecturerAddition(null)}>
+                <Header icon='browser' content={"Add lecturer"} />
+                <Modal.Content>
+                    { lecturerAddition &&
+                    <React.Fragment>
+                        <h3>{`Select new lecturer below`}</h3>
+                        <Dropdown
+                            fluid
+                            placeholder={"Select new lecturer"}
+                            search
+                            selection
+                            options={teachers.map(u => ({
+                                key: u.id,
+                                text: `${u.firstName} ${u.lastName}`,
+                                value: u.id
+                            }))}
+                            value={lecturerAddition ? lecturerAddition.new : null}
+                            onChange={(e, {value}) => {
+                                console.log("ADD/CLEAR_LECTURER: ", value);
+                                const newLecturer = {...lecturerAddition, new: value};
+                                setLecturerAddition(newLecturer);
+                            }}
+                        /></React.Fragment>
+                    }
+                </Modal.Content>
+                <Modal.Actions>
+                    <Button color='blue' onClick={() => {
+                            handleLecturerAddition(lecturerAddition.new);
+                            setLecturerAddition(null);
+                        }} inverted>
+                        <Icon name='checkmark' /> Add
                     </Button>
                 </Modal.Actions>
             </Modal>
@@ -415,11 +533,20 @@ export const Course = () => {
                                                     </Card.Description>
                                                 </Card.Content>
                                                 <Card.Content extra>
-                                                    <Button floated={"right"} color={"red"} icon={"delete"}></Button>
+                                                    <Button floated={"right"} color={"red"} icon={"delete"}
+                                                        onClick={() => {
+                                                            handleLecturerDeletion(lect.id);
+                                                        }}
+                                                    ></Button>
                                                 </Card.Content>
                                             </Card>
                                         </List.Item>)
                                         }
+                                        <List.Item key={`lect-add`}>
+                                            <Button icon={"plus"} fluid color={"blue"} onClick={() => {
+                                                setLecturerAddition({});
+                                            }} />
+                                        </List.Item>
                                     </List>
                                 </Table.Cell>
                                 <Table.Cell>
@@ -506,7 +633,11 @@ export const Course = () => {
                                 }
                                 </Table.Cell>
                                 <Table.Cell>
-                                    <Button color={"blue"} icon={"save"} floated={"right"} disabled={!isChanged()}/>
+                                    <Button color={"blue"} icon={"save"} floated={"right"} disabled={!isChanged()}
+                                        onClick={() => {
+                                            saveCourseChanges();
+                                        }}
+                                    />
                                     <Button color={"grey"} icon={"undo"} floated={"right"} disabled={!isChanged()}
                                         onClick={() => {
                                             setEditedValues({
