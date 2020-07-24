@@ -26,7 +26,7 @@ router.get('/', authenticateTokenMiddleware, async function(req, res) {
     }
 });
 
-router.get('/:gradeId', async function(req, res) {
+router.get('/:gradeId', authenticateTokenMiddleware, async function(req, res) {
     const gradeId = req.params.gradeId;
 
     try {
@@ -41,8 +41,14 @@ router.get('/:gradeId', async function(req, res) {
 
 router.get('/byuser/:userId', authenticateTokenMiddleware, async function(req, res) {
     const userId = req.params.userId;
+    const loggedId = req.user.sub;
 
     try {
+        if (loggedId !== userId) {
+            throw {
+                message: "User can see just his own grades."
+            }
+        }
         const grades = await Grade.find({ userId });
         res.json(grades);
     } catch (err) {

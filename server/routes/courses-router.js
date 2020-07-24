@@ -3,14 +3,13 @@ var moment = require('moment');
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const db = require('../utils/db');
-const { Router } = require('express');
 const e = require('express');
-const { user, course } = require('../utils/db');
 const sendErrorResponse = require("./utils").sendErrorResponse;
 const authenticateTokenMiddleware = require('../middlewares/auth.middleware');
 const roles = require('../models/user').roles;
 const Course = db.course;
 const User = db.user;
+const Grade = db.grade;
 
 const router = express.Router();
 
@@ -63,6 +62,37 @@ router.post('/', authenticateTokenMiddleware, async function (req, res) {
     }
 });
 
+router.get('/user/enroled/:userId', authenticateTokenMiddleware, async function (req, res) {
+    const loggedId = req.user.sub;
+    const userId = req.params.userId;
+
+    try {
+        if (loggedId !== userId) {
+            throw {
+                message: "Logged user can see only the courses he is enroled into.",
+            };
+        }
+        let courses = await Course.find();
+        courses = courses.filter(c => c.enrolments.includes(userId));
+        const courseIds = courses.map(c => c.id);
+        const grades = await Grade.find({ $and: [ {userId: loggedId }, {courseId:{ $in: courseIds}}]});
+
+        courses.map(c => {
+            const grade = grades.find(g => g.courseId === c.id);
+            return {
+                ...c,
+                grade: grade ? grade : null,
+            };
+        })
+
+        res.json(courses);
+    } catch (err) {
+        // reponse with the caught error
+        console.log(err);
+        sendErrorResponse(req, res, 500, `Server error: ${err.message}`, err);
+    }
+});
+
 router.get('/', authenticateTokenMiddleware, async function (req, res) {
     // validate user`s data
     try {
@@ -85,17 +115,6 @@ router.get('/:courseId', authenticateTokenMiddleware, async function (req, res) 
             };
         }
         res.json(course);
-    } catch (err) {
-        sendErrorResponse(req, res, 500, err.message, err);
-    }
-});
-
-router.get('/lecturer/:userId', authenticateTokenMiddleware, async function (req, res) {
-    const userId = req.params.userId;
-    try {
-        const courses = await Course.find({ lecturers: userId });
-        const coursesOwned = await Course.find({ owner: userId });
-        res.json(courses.concat(coursesOwned));
     } catch (err) {
         sendErrorResponse(req, res, 500, err.message, err);
     }
