@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useHistory } from "react-router";
-import { useParams } from "react-router-dom";
-import { Grid, Table, Segment, Card, Button, Dimmer, Loader, Input, Dropdown, List, Checkbox, TextArea, Label, SegmentInline, Modal, Header, Icon } from "semantic-ui-react";
-import { loadCourseById, modifyCourse } from "../../api/courses.api";
+import { useParams, useHistory } from "react-router-dom";
+import { Grid, Table, Segment, Card, Button, Dimmer, Loader, Input, Dropdown, List, Checkbox, TextArea, Label, Modal, Header, Icon } from "semantic-ui-react";
+import { loadCourseById, modifyCourse, addCourse } from "../../api/courses.api";
 
 import moment from 'moment';
 import { loadAllUsers, loadUserById } from "../../api/users.api";
@@ -25,21 +24,49 @@ export const constraints = {
     maxDescriptionLen: 512,
 };
 
-export const Course = () => {
+export const CourseCreator = () => {
 
-    // const history = useHistory();
+    const history = useHistory();
     const { courseId } = useParams();
     console.log(courseId);
     // console.log("COURSE: ", props);
     const logged = useSelector(selectLogged);
-    const [course, setCourse] = useState(null); 
+    const [course, setCourse] = useState({
+        id: null,
+        name: "",
+        owner: logged.id,
+        ownerUser: logged,
+        description: "",
+        lecturers: [],
+        lecturersUsers: [],
+        enrolmentLimit: 30,
+        hasEntranceTest: false,
+        targetSpeciality: "I",
+        enrolments: [],
+        enrolmentsUsers: [],
+        startDate: moment().add(1, 'days').startOf('day').format("YYYY-MM-DD"),
+    }); 
     const [teachers, setTeachers] = useState(null);
     const [error, setError] = useState(null);
     const [isCourseLoaded, setIsLoaded] = useState(false);
     const [loading, setLoadind] = useState(true);
     const [editedField, setEditField] = useState("");
     const [editingData, setEditingData] = useState({});
-    const [editedValues, setEditedValues] = useState({});
+    const [editedValues, setEditedValues] = useState({
+        id: null,
+        name: "",
+        owner: logged.id,
+        ownerUser: logged,
+        description: "",
+        lecturers: [],
+        lecturersUsers: [],
+        enrolmentLimit: 30,
+        hasEntranceTest: false,
+        targetSpeciality: "I",
+        enrolments: [],
+        enrolmentsUsers: [],
+        startDate: moment().add(1, 'days').startOf('day').format("YYYY-MM-DD"),
+    });
     const [grades, setGrades] = useState([]);
     const [gradingDetails, setGradingDetails] = useState(null);
     const [lecturerAddition, setLecturerAddition] = useState(null);
@@ -47,34 +74,11 @@ export const Course = () => {
     useEffect(() => {
         const loadCourse = async () => {
             try {
-                const response = await loadCourseById(courseId, logged.token);
-                console.log(response);
-                const courseData = response;
-                const responseOwner = await loadUserById(courseData.owner, logged.token);
                 const responseUsers = await loadAllUsers(logged.token);
-                const grades = await loadGradesByCourse(courseData.id, logged.token);
-                console.log("GRADES LOADED: ", grades);
-                const courseOwner = responseOwner;
-                console.log("OWNER: ", courseOwner);
-                const coursEnrolments = responseUsers.filter(u => courseData.enrolments.includes(u.id))
-                    .map(u => {
-                        const grade = grades.find(g => g.userId === u.id);
-                        return grade ? { ...u, grade} : { ...u, grade: undefined };
-                    });
-                const coursLecturers = responseUsers.filter(u => courseData.lecturers.includes(u.id))
-                console.log("USERS: ", coursEnrolments);
-                console.log("COURSE LOADED: ", response);
-                courseData.enrolmentsUsers = coursEnrolments;
-                courseData.lecturersUsers = coursLecturers;
-                courseData.ownerUser = courseOwner;
                 setTeachers(responseUsers.filter(u => u.roles.includes(roles.TEACHER)));
-                setCourse(courseData);
-                setEditedValues(courseData);
-                // setIsLoaded(true);
                 setLoadind(false);
             } catch (err) {
                 console.log(err);
-                // setIsLoaded(true);
                 setError(err.response);
                 setLoadind(false);
             }
@@ -84,22 +88,13 @@ export const Course = () => {
     }, [])
 
     const isChanged = () => {
-        console.log(editedValues.targetSpeciality === course.targetSpeciality);
-        if (course.enrolmentLimit !== editedValues.enrolmentLimit ||
-            course.description !== editedValues.description ||
-            (moment(course.startDate).diff(moment(editedValues.startDate), 'days') !== 0) ||
-            course.targetSpeciality !== editedValues.targetSpeciality ||
-            course.name !== editedValues.name ||
-            !(course.lecturers.length === editedValues.lecturers.length &&
-                course.lecturers.every(l => editedValues.lecturers.includes(l))) ||
-            !(course.enrolments.length === editedValues.enrolments.length &&
-                course.enrolments.every(e => editedValues.enrolments.includes(e))) ||
-            course.hasEntranceTest !== editedValues.hasEntranceTest
+        if (editedValues.name === "" ||
+            editedValues.enrolments.length !== 0
             ) {
                 console.log("HERE!!!");
-                return true;
+                return false;
         }
-        return false;
+        return true;
     };
 
     const rederEnrolments = () => {
@@ -108,7 +103,7 @@ export const Course = () => {
             return (<List.Item key={`user-${e.id}`}>
                 <Card fluid>
                     <Card.Content>
-                        <Card.Header>{`${e.firstName} ${e.lastName}`}</Card.Header>
+                        <Card.Header>{`${e.firstName}${e.lastName}`}</Card.Header>
                         <Card.Description>
                             {`${e.username}`}
                         </Card.Description>
@@ -248,7 +243,6 @@ export const Course = () => {
         }
     }
 
-
     const saveCourseChanges = async () => {
         try {
             const modified = {
@@ -263,8 +257,9 @@ export const Course = () => {
                 startDate: editedValues.startDate,
                 lecturers: editedValues.lecturers,
             };
-            const response = await modifyCourse(modified, logged.id, logged.token);
-            setCourse(editedValues);
+            const response = await addCourse(modified, logged.token);
+            console.log("RESPONSE: ", response);
+            history.push(response.location);
         } catch (err) {
             console.error(err);
         }
@@ -376,7 +371,7 @@ export const Course = () => {
                                 <Table.Cell>
                                     <Card>
                                     <Card.Content>
-                                        <Card.Header>{`${course.ownerUser.firstName} ${course.ownerUser.lastName}`}</Card.Header>
+                                        <Card.Header>{`${course.ownerUser.firstName}${course.ownerUser.lastName}`}</Card.Header>
                                         <Card.Description>
                                             {`${course.ownerUser.username}`}
                                         </Card.Description>
@@ -527,7 +522,7 @@ export const Course = () => {
                                         { editedValues.lecturersUsers.map(lect => <List.Item key={`lect-${lect}`}>
                                             <Card fluid>
                                                 <Card.Content>
-                                                    <Card.Header>{`${lect.firstName} ${lect.lastName}`}</Card.Header>
+                                                    <Card.Header>{`${lect.firstName}${lect.lastName}`}</Card.Header>
                                                     <Card.Description>
                                                         {`${lect.username}`}
                                                     </Card.Description>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { List, Button, Table, Tab } from 'semantic-ui-react';
+import { List, Button, Table, Tab, Segment, Sticky } from 'semantic-ui-react';
 import { specialties } from './Course';
 import moment from 'moment';
 import { useHistory } from 'react-router-dom';
@@ -15,6 +15,7 @@ import { roles } from '../register/Register';
 // import styles from './Counter.module.css';
 
 export function CoursesListView(props) {
+
     const history = useHistory();
     const buttons = [{
             key: "course-enroll",
@@ -70,9 +71,12 @@ export function CoursesListView(props) {
 
     console.log("BUTTONS: ", buttons.ROLE_STUDENT);
   return (
-      <React.Fragment>
+      <Segment style={{
+          maxHeight: '30em',
+          overflowY: 'scroll',
+      }}>
           <Table>
-              <Table.Header>
+            <Table.Header>
                 <Table.Row>
                     <Table.HeaderCell singleLine>Name</Table.HeaderCell>
                     <Table.HeaderCell singleLine>Started</Table.HeaderCell>
@@ -80,22 +84,22 @@ export function CoursesListView(props) {
                     <Table.HeaderCell singleLine>Start date</Table.HeaderCell>
                     <Table.HeaderCell singleLine>Options</Table.HeaderCell>
                 </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                  { props.courses.map(c => 
-                    <Table.Row>
-                        <Table.Cell>{c.name}</Table.Cell>
-                        <Table.Cell>{moment(c.startDate).diff(moment(), 'days') < 0 ? "Yes" : "No"}</Table.Cell>
-                        <Table.Cell>{specialties[c.targetSpeciality]}</Table.Cell>
-                        <Table.Cell>{moment(c.startDate).format("YYYY-MM-DD")}</Table.Cell>
-                        <Table.Cell>{buildButtonsList(c).map(b => <Button
-                            color={b.color}
-                            onClick={(event) => b.onClick(event, c)}
-                        >{b.name}</Button>)}</Table.Cell>
-                    </Table.Row>)
-                  }
-              </Table.Body>
+            </Table.Header>
+            <Table.Body>
+                { props.courses.map(c => 
+                <Table.Row>
+                    <Table.Cell>{c.name}</Table.Cell>
+                    <Table.Cell>{moment(c.startDate).diff(moment(), 'days') < 0 ? "Yes" : "No"}</Table.Cell>
+                    <Table.Cell>{specialties[c.targetSpeciality]}</Table.Cell>
+                    <Table.Cell>{moment(c.startDate).format("YYYY-MM-DD")}</Table.Cell>
+                    <Table.Cell>{buildButtonsList(c).map(b => <Button
+                        color={b.color}
+                        onClick={(event) => b.onClick(event, c)}
+                    >{b.name}</Button>)}</Table.Cell>
+                </Table.Row>)
+                }
+            </Table.Body>
           </Table>
-      </React.Fragment>
+      </Segment>
   );
 }
