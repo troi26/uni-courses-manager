@@ -8,7 +8,7 @@ import moment from 'moment';
 import { loadAllUsers, loadUserById } from "../../api/users.api";
 import { useSelector } from "react-redux";
 import { selectLogged } from "../loggin/loginSlice";
-import { loadGradesByCourse } from "../../api/grades.api";
+import { loadGradesByCourse, addGrade, modifyGrade, removeGrade } from "../../api/grades.api";
 
 export const specialties = {
     CS: "Computer Sciences",
@@ -115,9 +115,12 @@ export const Course = () => {
                             <Button floated={'right'} color={"red"} icon={"pencil alternate"}
                                 onClick={() => {
                                     setGradingDetails({
+                                        userId: e.id,
+                                        courseId: course.id,
                                         firstName: e.firstName,
                                         lastName: e.lastName,
-                                        grade: e.grade ? e.grade.value : -1
+                                        grade: e.grade ? e.grade.value : -1,
+                                        gradeId: e.grade ? e.grade.id : null,
                                     })
                                 }}></Button>
                         </Segment>
@@ -126,6 +129,63 @@ export const Course = () => {
                 </Card>
             </List.Item>)
         })
+    }
+
+    const gradeStudent = async (details) => {
+        if (details.grade > 0) {
+            if (details.gradeId) {
+                const data = {
+                    id: details.gradeId,
+                    userId: details.userId,
+                    courseId: details.courseId,
+                    value: details.grade
+                };
+                const modified = await modifyGrade(data, logged.token);
+                console.log("MODIFIED_GRADE: ", modified, course.enrolmentsUsers);
+                setCourse({
+                    ...course,
+                    enrolmentsUsers: course.enrolmentsUsers.map(u => 
+                        u.id === modified.userId ? {...u, grade: modified} : u)
+                })
+                setEditedValues({
+                    ...editedValues,
+                    enrolmentsUsers: editedValues.enrolmentsUsers.map(u => 
+                        u.id === modified.userId ? {...u, grade: modified} : u)
+                })
+            } else {
+                const data = {
+                    userId: details.userId,
+                    courseId: details.courseId,
+                    value: details.grade
+                };
+                const created = await addGrade(data, logged.token);
+                console.log("NEW_GRADE: ", created, course.enrolmentsUsers);
+                setCourse({
+                    ...course,
+                    enrolmentsUsers: course.enrolmentsUsers.map(u => 
+                        u.id === created.userId ? {...u, grade: created} : u)
+                })
+                setEditedValues({
+                    ...editedValues,
+                    enrolmentsUsers: editedValues.enrolmentsUsers.map(u => 
+                        u.id === created.userId ? {...u, grade: created} : u)
+                })
+            }
+        } else {
+            if (details.gradeId) {
+                const deleted = await removeGrade(details.gradeId, logged.token);
+                setCourse({
+                    ...course,
+                    enrolmentsUsers: course.enrolmentsUsers.map(u => 
+                        u.id === deleted.userId ? {...u, grade: undefined} : u)
+                })
+                setEditedValues({
+                    ...editedValues,
+                    enrolmentsUsers: editedValues.enrolmentsUsers.map(u => 
+                        u.id === deleted.userId ? {...u, grade: undefined} : u)
+                })
+            }
+        }
     }
 
     return (
@@ -157,8 +217,11 @@ export const Course = () => {
                         /></React.Fragment>
                     }
                 </Modal.Content>
-                    <Modal.Actions>
-                    <Button color='blue' onClick={() => setGradingDetails(null)} inverted>
+                <Modal.Actions>
+                    <Button color='blue' onClick={() => {
+                            gradeStudent(gradingDetails);
+                            setGradingDetails(null);
+                        }} inverted>
                         <Icon name='checkmark' /> Grade
                     </Button>
                 </Modal.Actions>
