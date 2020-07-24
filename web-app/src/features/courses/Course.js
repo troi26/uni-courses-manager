@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router";
 import { useParams } from "react-router-dom";
-import { Grid, Table, Segment, Card, Button, Dimmer, Loader, Input, Dropdown, List, Checkbox, TextArea, Label, SegmentInline } from "semantic-ui-react";
+import { Grid, Table, Segment, Card, Button, Dimmer, Loader, Input, Dropdown, List, Checkbox, TextArea, Label, SegmentInline, Modal, Header, Icon } from "semantic-ui-react";
 import { loadCourseById } from "../../api/courses.api";
 
 import moment from 'moment';
@@ -39,6 +39,7 @@ export const Course = () => {
     const [editingData, setEditingData] = useState({});
     const [editedValues, setEditedValues] = useState({});
     const [grades, setGrades] = useState([]);
+    const [gradingDetails, setGradingDetails] = useState(null);
 
     useEffect(() => {
         const loadCourse = async () => {
@@ -111,7 +112,14 @@ export const Course = () => {
                     <Card.Content extra>
                         <Segment padded={'small'}>
                             {e.grade ? e.grade.value : "-"}
-                            <Button floated={'right'} color={"red"} icon={"pencil alternate"}></Button>
+                            <Button floated={'right'} color={"red"} icon={"pencil alternate"}
+                                onClick={() => {
+                                    setGradingDetails({
+                                        firstName: e.firstName,
+                                        lastName: e.lastName,
+                                        grade: e.grade ? e.grade.value : -1
+                                    })
+                                }}></Button>
                         </Segment>
                         <Button fluid floated={"right"} color={"red"} icon={"delete"}></Button>
                     </Card.Content>
@@ -122,6 +130,39 @@ export const Course = () => {
 
     return (
         <React.Fragment>
+            <Modal
+                open={gradingDetails !== null} closeIcon onClose={() => setGradingDetails(null)}>
+                <Header icon='browser' content={"Grading"} />
+                <Modal.Content>
+                    { gradingDetails &&
+                    <React.Fragment>
+                        <h3>{`Enter ${gradingDetails.firstName} ${gradingDetails.lastName}\`s grade`}</h3>
+                        <Dropdown
+                            fluid
+                            placeholder={"Transfer to"}
+                            search
+                            selection
+                            options={[-1, 2, 3, 4, 5, 6].map(u => ({
+                                key: u,
+                                text: u > 0 ? u : "-",
+                                value: u
+                            }))}
+                            value={gradingDetails ? gradingDetails.grade : -1}
+                            onChange={(e, {value}) => {
+                                console.log("ADD/CLEAR_LECTURER: ", value);
+                                const newGradingDetails = {...gradingDetails};
+                                newGradingDetails.grade = value;
+                                setGradingDetails(newGradingDetails);
+                            }}
+                        /></React.Fragment>
+                    }
+                </Modal.Content>
+                    <Modal.Actions>
+                    <Button color='blue' onClick={() => setGradingDetails(null)} inverted>
+                        <Icon name='checkmark' /> Grade
+                    </Button>
+                </Modal.Actions>
+            </Modal>
             { course && !loading &&
                 <Grid style={{
                     margin: 0
