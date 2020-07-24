@@ -68,19 +68,20 @@ router.post("/auth/login", async (req, res) => {
 
 // get all users
 router.get("/", authenticateTokenMiddleware, async (req, res) => {
+    console.log("GET ALL USERS:");
     const users = await User.find();
-
+    console.log(users);
     res.json(users);
 });
 
 // get user by username
-router.get("/:username", authenticateTokenMiddleware, async (req, res) => {
-    const username = req.params.username;
+router.get("/:userId", async (req, res) => {
+    const userId = req.params.userId;
     try {
-        const user = await User.findOne({ username });
+        const user = await User.findById(userId);
         if (!user) {
             throw {
-                message: "User with selected username does not exist."
+                message: "User with selected ID does not exist."
             };
         }
         res.json(user);
@@ -113,28 +114,29 @@ router.delete("/:username", authenticateTokenMiddleware, async (req, res) => {
 });
 
 // modify user data if myself or admin
-router.put("/:username", authenticateTokenMiddleware, async (req, res) => {
+router.put("/:userId", async (req, res) => {
     const newData = req.body;
-    const username = req.params.username;
+    const userId = req.params.userId;
     try {
+        // Check if new password send
+        const user = await User.findById(userId);
         // Username changes are not permitted
-        if (newData.username !== username) {
+        if (newData.username !== user.username) {
             throw {
                 message: "'Username' can not be changed!"
             };
-            return;
         }
-        // Check if new password send
-        const user = await User.findOne({ username });
+
         if (!bcrypt.compareSync(newData.password, user.password)) {
             newData.password = bcrypt.hashSync(newData.password, 10);
         }
 
-        const result = await User.update(newData);
+        console.log(user);
+        await User.findOneAndUpdate(newData.id, newData);
 
         // TODO: Check if JWT refresh needed here!!!
 
-        res.json(result);
+        res.json(newData);
     } catch (err) {
         sendErrorResponse(req, res, 500, err.message, err);
     }
