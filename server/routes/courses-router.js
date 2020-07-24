@@ -101,12 +101,13 @@ router.get('/lecturer/:userId', async function (req, res) {
 });
 
 router.put('/:userId/:courseId', async function (req, res) {
+    console.log("HERE");
     const userId = req.params.userId;
     const courseId = req.params.courseId;
     const modifiedCourse = req.body;
 
     try {
-        if (courseId !== course) {
+        if (courseId !== modifiedCourse.id) {
             throw {
                 message: "Course`s id and the path id are different.",
             }
@@ -114,12 +115,12 @@ router.put('/:userId/:courseId', async function (req, res) {
 
         const user = await User.findById(userId);
         
-        if (userId !== course.owner && !user.roles.includes(roles.ADMIN)) {
+        if (userId !== modifiedCourse.owner && !user.roles.includes(roles.ADMIN)) {
             throw {
                 message: "Not authorized for this action."
             };
         }
-
+        console.log(courseId);
         const exist = await Course.findById(courseId);
         if (!exist) {
             throw {
@@ -132,10 +133,8 @@ router.put('/:userId/:courseId', async function (req, res) {
             }
         }
 
-        const modifiedCourseModel = new Course(course);
-
-        const modified = await Course.updateOne(modifiedCourseModel);
-        res.json(modified);
+        await Course.findOneAndUpdate(modifiedCourse.id, modifiedCourse);
+        res.json(modifiedCourse);
     } catch (err) {
         sendErrorResponse(req, res, 500, err.message, err);
     }
@@ -169,10 +168,9 @@ router.patch("/transfer/:courseId/:userFrom/:userTo", async function (req, res) 
         }
 
         course.owner = userToId;
-        const modified = new Course(course);
 
-        await Course.updateOne(modified);
-        res.json(modified);
+        await Course.findOneAndUpdate(course._id, course);
+        res.json(course);
     } catch (err) {
         sendErrorResponse(req, res, 500, err.message, err);
     }
@@ -213,7 +211,7 @@ router.delete('/:userId/:courseId', async function (req, res) {
 });
 
 // Enrol for the course
-router.patch("/enroll/:courseId/:userId", async function (req, res) {
+router.patch("/enrol/:courseId/:userId", async function (req, res) {
     const courseId = req.params.courseId;
     const userId = req.params.userId;
 
@@ -237,18 +235,19 @@ router.patch("/enroll/:courseId/:userId", async function (req, res) {
                 message: "Specified course does not exist.",
             };
         }
-
+        
         if (moment(course.startDate).diff(moment(), 'seconds') <= 0) {
+            console.log(course, course.startDate, moment(course.startDate), moment());
             throw {
                 message: "This course has already started."
             };
         }
+        // console.log(course);
 
         course.enrolments = course.enrolments.filter(e => e !== userId).concat([userId]);
 
-        const modified = new Course(course);
-        await Course.updateOne(modified)
-        res.json(modified);
+        await Course.findByIdAndUpdate(course._id, course)
+        res.json(course);
 
     } catch (err) {
         sendErrorResponse(req, res, 500, err.message, err);
@@ -256,7 +255,7 @@ router.patch("/enroll/:courseId/:userId", async function (req, res) {
 });
 
 // Close course enrolment
-router.patch("/cancelenrollment/:courseId/:userId", async function (req, res) {
+router.patch("/cancelenrolment/:courseId/:userId", async function (req, res) {
     // Check if logged user is owner of the course or a lecturer of it
     const courseId = req.params.courseId;
     const userId = req.params.userId;
@@ -272,15 +271,14 @@ router.patch("/cancelenrollment/:courseId/:userId", async function (req, res) {
 
         if (moment(course.startDate).diff(moment(), 'seconds') <= 0) {
             throw {
-                message: "Can not cancel your enrollment, because this course has already been started."
+                message: "Can not cancel your enrolment, because this course has already been started."
             };
         }
 
         course.enrolments = course.enrolments.filter(e => e !== userId);
 
-        const modified = new Course(course);
-        await Course.updateOne(modified)
-        res.json(modified);
+        await Course.findByIdAndUpdate(course._id, course)
+        res.json(course);
     } catch (err) {
         sendErrorResponse(req, res, 500, err.message, err);
     }
