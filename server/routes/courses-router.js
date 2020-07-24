@@ -22,10 +22,10 @@ const specialties = {
     AM: "Applied Mathematics"
 };
 
-router.post('/:userId', async function (req, res) {
+router.post('/', async function (req, res) {
     // validate user`s data
     const course = req.body;
-    const userId = req.params.userId;
+    const userId = course.owner;
     try {
         console.log(userId);
         const user = await User.findById(userId);

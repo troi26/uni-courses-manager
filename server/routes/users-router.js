@@ -132,7 +132,7 @@ router.put("/:userId", async (req, res) => {
         }
 
         console.log(user);
-        await User.findOneAndUpdate(newData.id, newData);
+        await User.findByIdAndUpdate(newData.id, newData);
 
         // TODO: Check if JWT refresh needed here!!!
 
@@ -141,5 +141,36 @@ router.put("/:userId", async (req, res) => {
         sendErrorResponse(req, res, 500, err.message, err);
     }
 });
+
+router.patch('/auth/passwordchange/:userId/:currentPassword/:newPassword', async (req, res) => {
+    const newData = req.body;
+    const userId = req.params.userId;
+    const currentPassword = req.params.currentPassword;
+    const newPassword = req.params.newPassword;
+    try {
+        // Check if new password send
+        const user = await User.findById(userId);
+        // Username changes are not permitted
+        console.log(user, currentPassword);
+        if (!bcrypt.compareSync(currentPassword, user.password)) {
+            throw {
+                message: "Current password does not match."
+            };
+        }
+
+        let newPasswordHash = user.password;
+        if (!bcrypt.compareSync(newPassword, user.password)) {
+            newPasswordHash = bcrypt.hashSync(newPassword, 10);
+        }
+            
+        await User.findByIdAndUpdate(userId, {$set: {password: newPasswordHash}});
+
+        res.json({
+            token: newPasswordHash
+        });
+    } catch (err) {
+        sendErrorResponse(req, res, 500, err.message, err);
+    }
+})
 
 module.exports.router = router;
