@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const usersRouter = require('./routes/users-router').router;
 const coursesRouter = require('./routes/courses-router');
 // const chatRouter = require('./routes/chat-router');
-// const gradesRouter = require('./routes/grades-router');
+const gradesRouter = require('./routes/grades-router');
 const sendErrorResponse = require('./routes/utils.js').sendErrorResponse;
 const db_name = 'courses-manager';
 
@@ -33,7 +33,7 @@ app.use(function (req, res, next) {
   // Request methods you wish to allow
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
   // Request headers you wish to allow
-  res.header('Access-Control-Allow-Headers', 'X-Requested-With,content-type,__setXHR_');
+  res.header('Access-Control-Allow-Headers', 'Authorization, X-Requested-With, content-type,__setXHR_');
   // Set to true if you need the website to include cookies in the requests sent
   // to the API (e.g. in case you use sessions)
   res.header('Access-Control-Allow-Credentials', true);
@@ -52,7 +52,7 @@ app.use(function (req, res, next) {
 app
     .use('/api/courses', coursesRouter)
     // .use('/api/users/chat', chatRouter)
-    // .use('/api/users/grades', gradesRouter)
+    .use('/api/grades', gradesRouter)
     .use('/api/users', usersRouter);
 
 const connectionOptions = { useCreateIndex: true, useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false };
