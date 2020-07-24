@@ -8,7 +8,7 @@ import { domain } from '../../api/server.connection';
 import { MyFiltersComponent } from './MyFiltersComponent';
 import { roles } from '../register/Register';
 import { Segment, Modal, Dropdown, Button, Icon, Header } from 'semantic-ui-react';
-import { cancelEnrolmentIntoCourse, enrolIntoCourse, transferCourse } from '../../api/courses.api';
+import { cancelEnrolmentIntoCourse, enrolIntoCourse, transferCourse, deleteCourse } from '../../api/courses.api';
 
 export function CoursesList(props) {
 
@@ -145,6 +145,15 @@ export function CoursesList(props) {
       }
   };
 
+  const handleCourseRemoval = async (course) => {
+    try {
+      await deleteCourse(course.id, logged.id, logged.token);
+      setCourses(courses.filter(c => c.id !== course.id));
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   return (
     <React.Fragment>
       <Modal
@@ -200,6 +209,7 @@ export function CoursesList(props) {
         onOpenTransferModal={handleCourseTransferModalOpen}
         onCourseEnrol={handleCourseEnrol}
         onCancelCourseEnrol={handleCancelCourseEnrol}
+        onRemoveCourse={handleCourseRemoval}
       />
     </React.Fragment>
   );

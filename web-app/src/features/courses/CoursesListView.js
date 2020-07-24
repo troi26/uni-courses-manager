@@ -42,7 +42,7 @@ export function CoursesListView(props) {
         },{
             key: "course-open",
             name: "Open",
-            color: "yellow",
+            color: "grey",
             isShown: (course) => {
                 console.log("OWNER_CHECK: ", course.owner, props.logged.id);
                 return props.logged.roles.includes(roles.ADMIN) ||
@@ -62,6 +62,20 @@ export function CoursesListView(props) {
             },
             onClick: (event, course) => {
                 props.onOpenTransferModal(course);
+            }
+        }, {
+            key: "course-remove",
+            name: "Remove",
+            color: "yellow",
+            icon: "trash alternate",
+            floated: 'right',
+            isShown: (course) => {
+                console.log("OWNER_CHECK: ", course.owner, props.logged.id);
+                return props.logged.roles.includes(roles.ADMIN) ||
+                    props.logged.roles.includes(roles.TEACHER) && course.owner === props.logged.id;
+            },
+            onClick: (event, course) => {
+                props.onRemoveCourse(course);
             }
         }];
 
@@ -89,13 +103,22 @@ export function CoursesListView(props) {
                 { props.courses.map(c => 
                 <Table.Row>
                     <Table.Cell>{c.name}</Table.Cell>
-                    <Table.Cell>{moment(c.startDate).diff(moment(), 'days') < 0 ? "Yes" : "No"}</Table.Cell>
+                    <Table.Cell>{!(moment(c.startDate).diff(moment(), 'seconds') > 0) ? "Yes" : "No"}</Table.Cell>
                     <Table.Cell>{specialties[c.targetSpeciality]}</Table.Cell>
                     <Table.Cell>{moment(c.startDate).format("YYYY-MM-DD")}</Table.Cell>
-                    <Table.Cell>{buildButtonsList(c).map(b => <Button
+                    <Table.Cell>{buildButtonsList(c).map(b => b.icon ?
+                    <Button
                         color={b.color}
                         onClick={(event) => b.onClick(event, c)}
-                    >{b.name}</Button>)}</Table.Cell>
+                        icon={b.icon ? b.icon : "none"}
+                        floated={b.floated ? b.floated : false}
+                    /> :
+                    <Button
+                        color={b.color}
+                        onClick={(event) => b.onClick(event, c)}
+                        content={b.icon ? false : b.name}
+                        floated={b.floated ? b.floated : false}
+                    />)}</Table.Cell>
                 </Table.Row>)
                 }
             </Table.Body>
