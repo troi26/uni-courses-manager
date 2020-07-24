@@ -8,9 +8,13 @@ import { Segment } from 'semantic-ui-react';
 import { Login } from './features/loggin/Login';
 import { Register } from './features/register/Register';
 import 'semantic-ui-css/semantic.min.css';
-import {CoursesList} from "./features/courses/CoursesList";
+import { CoursesList } from "./features/courses/CoursesList";
 import { selectLogged, loadLogged, selectLoaded } from './features/loggin/loginSlice';
 import { useSelector, useDispatch } from 'react-redux';
+import { Course } from './features/courses/Course';
+// import {createBrowserHistory} from "history";
+
+// export const history = createBrowserHistory();
 
 function App() {
   const dispatch = useDispatch();
@@ -38,6 +42,12 @@ function App() {
             { !logged
               ? <Register />
               : <Redirect to={"/courses"} />
+            }
+          </Route>
+          <Route exact path="/courses/:courseId" >
+            { !logged
+              ? <Redirect to={"/auth/login"} />
+              : <Course />
             }
           </Route>
           <Route exact path="/courses" >

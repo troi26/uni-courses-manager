@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
-import { List, Button } from 'semantic-ui-react';
+import { List, Button, Table, Tab } from 'semantic-ui-react';
+import { specialties } from './Course';
+import moment from 'moment';
+import { useHistory } from 'react-router-dom';
+import { roles } from '../register/Register';
 // import { useSelector, useDispatch } from 'react-redux';
 // import {
 //   decrement,
@@ -11,75 +15,85 @@ import { List, Button } from 'semantic-ui-react';
 // import styles from './Counter.module.css';
 
 export function CoursesListView(props) {
-    const buttons = {
-        "ROLE_STUDENT": [
-            {
-                key: "course-enroll",
-                name: "Enrol",
-                isShown: (course, studentId) => {
-                    return !course.enrolments.includes(studentId);
-                },
-                onClick: (event, studentId, courseId) => {
-                    props.onCourseEnroll(studentId, courseId);
-                },
-            }, {
-                key: "course-cancel-enroll",
-                name: "Cancel",
-                isShown: (course, studentId) => {
-                    return course.enrolments.includes(studentId);
-                },
-                onClick: (event, studentId, courseId) => {
-                    props.onCancelCourseEnroll(studentId, courseId);
-                }
-            }
-        ],
-        "ROLE_TEACHER": [{
-            key: "course-cancel-enroll",
-            name: "Cancel",
-            isShown: (course, studentId) => {
-                return course.enrolments.includes(studentId);
+    const history = useHistory();
+    const buttons = [{
+            key: "course-enroll",
+            name: "Enrol",
+            color: "green",
+            isShown: (course) => {
+                return props.logged.roles.includes(roles.STUDENT) && !course.enrolments.includes(props.logged.id);
             },
-            onClick: (event, studentId, courseId) => {
-                props.onCancelCourseEnroll(studentId, courseId);
-            }
+            onClick: (event, studentId, course) => {
+                props.onCourseEnroll(studentId, course.id);
+            },
         }, {
             key: "course-cancel-enroll",
             name: "Cancel",
-            isShown: (course, studentId) => {
-                return course.enrolments.includes(studentId);
+            color: "red",
+            isShown: (course) => {
+                return props.logged.roles.includes(roles.STUDENT) && course.enrolments.includes(props.logged.id);
             },
-            onClick: (event, studentId, courseId) => {
-                props.onCancelCourseEnroll(studentId, courseId);
+            onClick: (event, studentId, course) => {
+                props.onCancelCourseEnroll(studentId, course.id);
             }
-        }],
-        "ROLE_ADMIN": {
+        },{
+            key: "course-open",
+            name: "Open",
+            color: "yellow",
+            isShown: (course) => {
+                console.log("OWNER_CHECK: ", course.owner, props.logged.id);
+                return props.logged.roles.includes(roles.ADMIN) ||
+                    props.logged.roles.includes(roles.TEACHER) && course.owner === props.logged.id;
+            },
+            onClick: (event, course) => {
+                history.push(`/courses/${course.id}`);
+            }
+        }, {
+            key: "course-open",
+            name: "Transfer",
+            color: "blue",
+            isShown: (course) => {
+                console.log("OWNER_CHECK: ", course.owner, props.logged.id);
+                return props.logged.roles.includes(roles.ADMIN) ||
+                    props.logged.roles.includes(roles.TEACHER) && course.owner === props.logged.id;
+            },
+            onClick: (event, course) => {
+                props.onOpenTransferModal(course);
+            }
+        }];
 
-        }
-    };
+    const buildButtonsList = (course) => {
+        return buttons.filter(b => b.isShown(course));
+    }
 
     console.log("BUTTONS: ", buttons.ROLE_STUDENT);
   return (
-    <List divided verticalAlign='middle' inverted className={"courses-list"}>
-        {props.courses.map(c => <List.Item inverted style={{
-             padding: "5px"
-        }}>
-            <List.Content floated='right'>
-                {
-                    buttons.ROLE_STUDENT.filter(b => b.isShown({enrolments: ["123"]}, "123")).map(b => 
-                        <Button 
-                            key={b.key}
-                            onClick={(event) => b.onClick("124", "123")}
-                        >{b.name}</Button>
-                        )
-                }
-            </List.Content>
-            <List.Content style={{
-                color: "white",
-                textAlign: 'left'
-                }}>{c.name}
-            </List.Content>
-            </List.Item>)
-        }
-    </List>
+      <React.Fragment>
+          <Table>
+              <Table.Header>
+                <Table.Row>
+                    <Table.HeaderCell singleLine>Name</Table.HeaderCell>
+                    <Table.HeaderCell singleLine>Started</Table.HeaderCell>
+                    <Table.HeaderCell singleLine>Specialty</Table.HeaderCell>
+                    <Table.HeaderCell singleLine>Start date</Table.HeaderCell>
+                    <Table.HeaderCell singleLine>Options</Table.HeaderCell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                  { props.courses.map(c => 
+                    <Table.Row>
+                        <Table.Cell>{c.name}</Table.Cell>
+                        <Table.Cell>{moment(c.startDate).diff(moment(), 'days') < 0 ? "Yes" : "No"}</Table.Cell>
+                        <Table.Cell>{specialties[c.targetSpeciality]}</Table.Cell>
+                        <Table.Cell>{moment(c.startDate).format("YYYY-MM-DD")}</Table.Cell>
+                        <Table.Cell>{buildButtonsList(c).map(b => <Button
+                            color={b.color}
+                            onClick={(event) => b.onClick(event, c)}
+                        >{b.name}</Button>)}</Table.Cell>
+                    </Table.Row>)
+                  }
+              </Table.Body>
+          </Table>
+      </React.Fragment>
   );
 }

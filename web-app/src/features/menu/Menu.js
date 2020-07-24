@@ -6,7 +6,7 @@ import { selectLogged, logout } from '../loggin/loginSlice';
 import { roles } from '../register/Register';
 
 export const HeaderMenu = (props) => {
-    const [activeItem, setActiveItem] = useState('login');
+    const [activeItem, setActiveItem] = useState('courses');
 
     const logged = useSelector(selectLogged);
 
@@ -20,7 +20,7 @@ export const HeaderMenu = (props) => {
     };
 
     return (
-        <Sticky onTop>
+        // <Sticky onTop>
             <Menu inverted pointing secondary>
                 { !logged &&
                 <React.Fragment>
@@ -28,14 +28,14 @@ export const HeaderMenu = (props) => {
                     <Menu.Item
                         name='login'
                         active={activeItem === 'login'}
-                        onClick={setActiveItem}
+                        onClick={() => setActiveItem("login")}
                     >Login</Menu.Item>
                     </NavLink>
                     <NavLink to={"/auth/register"}>
                     <Menu.Item
                         name='register'
                         active={activeItem === 'register'}
-                        onClick={setActiveItem}
+                        onClick={() => setActiveItem("register")}
                         >Register</Menu.Item>
                     </NavLink>
                 </React.Fragment>
@@ -44,24 +44,24 @@ export const HeaderMenu = (props) => {
                     <React.Fragment>
                         <NavLink to={"/courses"}>
                             <Menu.Item
-                                name='login'
-                                active={activeItem === 'login'}
-                                onClick={setActiveItem}
+                                name='courses'
+                                active={activeItem === 'courses'}
+                                onClick={() => setActiveItem("courses")}
                             >Courses</Menu.Item>
                         </NavLink>
-                        <NavLink to={"/courses/:userId"}>
+                        {/* <NavLink to={"/courses/:userId"}>
                             <Menu.Item
                                 name='my-courses'
                                 active={activeItem === 'my-courses'}
                                 onClick={setActiveItem}
                             >Courses</Menu.Item>
-                        </NavLink>
+                        </NavLink> */}
                         <Menu.Menu position='right'>
                             <Menu.Item
-                                name='logout'
-                                active={activeItem === 'logout'}
-                                onClick={handleLogout}
-                            />
+                                name='login'
+                                active={activeItem === 'login'}
+                                onClick={() => setActiveItem("login")}
+                            >Logout</Menu.Item>
                         </Menu.Menu>
                     </React.Fragment>
                 }
@@ -78,6 +78,6 @@ export const HeaderMenu = (props) => {
                 />
                 </Menu.Menu> */}
             </Menu>
-        </Sticky>
+        // </Sticky>
     )
 }
