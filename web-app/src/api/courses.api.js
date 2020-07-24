@@ -51,3 +51,17 @@ export async function modifyCourse (course, userId, token) {
         throw err;
     }
 }
+
+export async function addCourse (data, token) {
+    try {
+        const endpoint = `${domain}/api/courses`;
+        const response = await axios.post(endpoint, data, buildPOSTWithJWTConfig(token));
+        console.log(response);
+        return {
+            location: response.headers.location.replace("/api", ""),
+            data: response.data,
+        };
+    } catch (err) {
+        throw err;
+    }
+}

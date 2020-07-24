@@ -1,6 +1,6 @@
 import { domain } from "./server.connection"
 import axios from 'axios';
-import { buildTokenAuthHeader } from "./utils";
+import { buildTokenAuthHeader, buildPOSTWithJWTConfig } from "./utils";
 
 export const createPostRequest = (data) => ({
     method: "POST",
@@ -24,15 +24,15 @@ export const registerCall = async (data) => {
     }
 }
 
-export const loadUserById = async (userId, token) => {
-    try {
-        const endpoint = `${domain}/api/users/${userId}`;
-        const response = await axios(endpoint, buildTokenAuthHeader(token));
-        return response.data;
-    } catch (err) {
-        throw err;
-    }
-}
+// export const loadUserById = async (userId, token) => {
+//     try {
+//         const endpoint = `${domain}/api/users/${userId}`;
+//         const response = await axios(endpoint, buildTokenAuthHeader(token));
+//         return response.data;
+//     } catch (err) {
+//         throw err;
+//     }
+// }
 
 export const loadAllUsers = async (token) => {
     try {
@@ -41,6 +41,39 @@ export const loadAllUsers = async (token) => {
         return response.data;
     } catch (err) {
         console.log("ERROR: ", err);
+        throw err;
+    }
+}
+
+export const loadUserById = async (userId, token) => {
+    try {
+        const endpoint = `${domain}/api/users/${userId}`;
+        const response = await axios(endpoint, buildTokenAuthHeader(token));
+        return response.data;
+    } catch (err) {
+        console.log("ERROR: ", err);
+        throw err;
+    }
+}
+
+export const modifyUser = async (data, userId, token) => {
+    try {
+        const endpoint = `${domain}/api/users/${userId}`;
+        const response = await axios.post(endpoint, data, buildPOSTWithJWTConfig(token));
+        return response.data;
+    } catch (err) {
+        console.log("MODIFY ERROR: ", err);
+        throw err;
+    }
+}
+
+export async function passwordChange (data, userId, token) {
+    try {
+        const endpoint = `${domain}/api/users/auth/passwordchange/${userId}/${data.current}/${data.new}`;
+        const response = await axios.patch(endpoint, data, buildPOSTWithJWTConfig(token));
+        return response.data;
+    } catch (err) {
+        console.log("MODIFY ERROR: ", err);
         throw err;
     }
 }
