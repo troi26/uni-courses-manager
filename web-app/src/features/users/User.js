@@ -27,7 +27,7 @@ export const User = () => {
 
         const loadUser = async () => {
             try {
-                const user = await loadUserById(userId);
+                const user = await loadUserById(userId, logged.token);
                 setUser(user);
                 setError(null);
                 setLoading(false);
