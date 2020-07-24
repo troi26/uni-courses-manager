@@ -98,6 +98,7 @@ router.get('/user/:userId/:courseId', async function(req, res) {
 
 router.post('/', async function(req, res) {
     const grade = req.body;
+    console.log(grade);
 
     try {
         const course = await Course.findById(grade.courseId);
@@ -165,6 +166,27 @@ router.put('/:userId/:gradeId', async function(req, res) {
         await Grade.findByIdAndUpdate(prevGrade._id, grade);
 
         res.json(grade);
+    } catch (err) {
+        // reponse with the caught error
+        console.log(err);
+        sendErrorResponse(req, res, 500, `Server error: ${err.message}`, err);
+    }
+});
+
+router.delete('/:gradeId', async (req, res) => {
+    const gradeId = req.params.gradeId;
+    
+    try {
+        const grade = await Grade.findById(gradeId);
+        if (!grade) {
+            throw {
+                message: `Grade with ID=${gradeId} does not exists.`
+            };
+        }
+
+
+        const deleted = await Grade.findByIdAndDelete(gradeId);
+        res.json(deleted);
     } catch (err) {
         // reponse with the caught error
         console.log(err);
