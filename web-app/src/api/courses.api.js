@@ -65,3 +65,13 @@ export async function addCourse (data, token) {
         throw err;
     }
 }
+
+export async function deleteCourse (courseId, ownerId, token) {
+    try {
+        const endpoint = `${domain}/api/courses/${ownerId}/${courseId}`;
+        const response = await axios.delete(endpoint, buildTokenAuthHeader(token));
+        return response.data;
+    } catch (err) {
+        throw err;
+    }
+}
