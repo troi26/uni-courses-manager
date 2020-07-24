@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Segment, List, Dimmer, Loader, Table, Button, Input, Modal, Header, Icon, Divider } from 'semantic-ui-react';
+import { Segment, List, Dimmer, Loader, Table, Button, Input, Modal, Header, Icon, Divider, Tab } from 'semantic-ui-react';
 import { loadUserById, modifyUser, passwordChange } from '../../api/users.api';
 import moment from 'moment';
 import { Logger } from 'mongodb';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectLogged, changeToken } from '../loggin/loginSlice';
+import { loadCoursesOfStudent } from '../../api/courses.api';
 
 const invertedRoles = {
     ROLE_ADMIN: "Admin",
@@ -19,6 +20,7 @@ export const User = () => {
     const { userId } = useParams();
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState();
+    const [courses, setCourses] = useState([]);
     const [error, setError] = useState(null);
     const [passwordError, setPasswordError] = useState(null);
     const [passwordChangeModal, setPasswordChange] = useState(null);
@@ -29,6 +31,9 @@ export const User = () => {
             try {
                 const user = await loadUserById(userId, logged.token);
                 setUser(user);
+                setError(null);
+                const courses = await loadCoursesOfStudent(userId, logged.token);
+                setCourses(courses);
                 setError(null);
                 setLoading(false);
             } catch (err) {
@@ -100,6 +105,7 @@ export const User = () => {
             </Modal>
             <h1>Account data</h1>
             { user && !loading &&
+            <React.Fragment>
                 <Table>
                     <Table.Header>
                         <Table.HeaderCell>
@@ -138,6 +144,22 @@ export const User = () => {
                         >Change password</Button></Table.Cell>
                     </Table.Body>
                 </Table>
+                    <h1>Enroled courses</h1>
+                <Table>
+                    <Table.Header>
+                        <Table.HeaderCell>Course name</Table.HeaderCell>
+                        <Table.HeaderCell>Grade</Table.HeaderCell>
+                    </Table.Header>
+                    <Table.Body>
+                        { courses.map(c => 
+                        <Table.Row key={`course-${c.id}`}>
+                            <Table.Cell>{c.name}</Table.Cell>
+                            <Table.Cell>{c.grade ? c.grade.value : "-"}</Table.Cell>
+                        </Table.Row>
+                        )}
+                    </Table.Body>
+                </Table>
+                </React.Fragment>
             }
             { loading &&
                 <React.Fragment>

@@ -1,9 +1,8 @@
 import { domain } from "./server.connection";
 import axios from 'axios'; 
 import { buildTokenAuthHeader, buildPOSTWithJWTConfig } from "./utils";
-import { createPostRequest } from "./users.api";
 
-const buildEndpoint = (apiroute) => {
+export const buildEndpoint = (apiroute) => {
     return `${domain}${apiroute}`;
 }
 
@@ -50,6 +49,16 @@ export const removeGrade = async (gradeId, token) => {
         // if (response.ok) {
             return response.data;
         // }
+    } catch (err) {
+        throw err;
+    }
+}
+
+export const loadGradesOfUser = async (userId, token) => {
+    const endpoint = buildEndpoint(`/api/grades/byuser/${userId}`);
+    try {
+        const response = await axios.get(endpoint, buildTokenAuthHeader(token));
+        return response.data;
     } catch (err) {
         throw err;
     }
