@@ -15,7 +15,7 @@ export const loadCourseById = async (courseId, token) => {
 export const enrolIntoCourse = async (userId, courseId, token) => {
     try {
         const endpoint = `${domain}/api/courses/enrol/${courseId}/${userId}`;
-        const response = await axios.patch(endpoint, buildTokenAuthHeader(token));
+        const response = await axios.patch(endpoint, {}, buildTokenAuthHeader(token));
         return response.data;
     } catch (err) {
         throw err;
@@ -25,7 +25,7 @@ export const enrolIntoCourse = async (userId, courseId, token) => {
 export const cancelEnrolmentIntoCourse = async (userId, courseId, token) => {
     try {
         const endpoint = `${domain}/api/courses/cancelenrolment/${courseId}/${userId}`;
-        const response = await axios.patch(endpoint, buildTokenAuthHeader(token));
+        const response = await axios.patch(endpoint, {}, buildTokenAuthHeader(token));
         return response.data;
     } catch (err) {
         throw err;
@@ -35,7 +35,7 @@ export const cancelEnrolmentIntoCourse = async (userId, courseId, token) => {
 export const transferCourse = async (courseId, userFrom, userTo, token) => {
     try {
         const endpoint = `${domain}/api/courses/transfer/${courseId}/${userFrom}/${userTo}/`;
-        const response = await axios.patch(endpoint, buildTokenAuthHeader(token));
+        const response = await axios.patch(endpoint, {}, buildTokenAuthHeader(token));
         return response.data;
     } catch (err) {
         throw err;

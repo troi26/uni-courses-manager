@@ -37,7 +37,7 @@ export const registerCall = async (data) => {
 export const loadAllUsers = async (token) => {
     try {
         const endpoint = `${domain}/api/users`;
-        const response = await axios(endpoint, buildTokenAuthHeader(token));
+        const response = await axios.get(endpoint, buildTokenAuthHeader(token));
         return response.data;
     } catch (err) {
         console.log("ERROR: ", err);
@@ -48,7 +48,7 @@ export const loadAllUsers = async (token) => {
 export const loadUserById = async (userId, token) => {
     try {
         const endpoint = `${domain}/api/users/${userId}`;
-        const response = await axios(endpoint, buildTokenAuthHeader(token));
+        const response = await axios.get(endpoint, buildTokenAuthHeader(token));
         return response.data;
     } catch (err) {
         console.log("ERROR: ", err);
