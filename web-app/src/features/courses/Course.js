@@ -156,9 +156,11 @@ export const Course = () => {
                                     })
                                 }}></Button>
                         </Segment>
-                        <Button fluid floated={"right"} color={"red"} icon={"delete"}
+                        { logged.id === course.owner &&
+                            <Button fluid floated={"right"} color={"red"} icon={"delete"}
                             onClick={() => handleStudentEnrolmentCancel(e.id)}
                         ></Button>
+                        }
                     </Card.Content>
                 </Card>
             </List.Item>)
