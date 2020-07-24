@@ -169,7 +169,7 @@ router.patch("/transfer/:courseId/:userFrom/:userTo", async function (req, res) 
 
         course.owner = userToId;
 
-        await Course.findOneAndUpdate(course._id, course);
+        await Course.findOneAndUpdate(courseId, course);
         res.json(course);
     } catch (err) {
         sendErrorResponse(req, res, 500, err.message, err);
