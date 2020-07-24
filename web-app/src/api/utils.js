@@ -14,7 +14,7 @@ export const buildTokenAuthHeaderJSON = () => {
     };
 }
 
-export const buildPOSTWithJWTConfig = (data, token) => {
+export const buildPOSTWithJWTConfig = (token) => {
     return {
         headers: {
             "Content-Type": "application/json",
