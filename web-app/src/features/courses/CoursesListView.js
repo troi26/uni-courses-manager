@@ -46,13 +46,13 @@ export function CoursesListView(props) {
             isShown: (course) => {
                 console.log("OWNER_CHECK: ", course.owner, props.logged.id);
                 return props.logged.roles.includes(roles.ADMIN) ||
-                    props.logged.roles.includes(roles.TEACHER) && course.owner === props.logged.id;
+                    props.logged.roles.includes(roles.TEACHER) && course.lecturers.includes(props.logged.id);
             },
             onClick: (event, course) => {
                 history.push(`/courses/${course.id}`);
             }
         }, {
-            key: "course-open",
+            key: "course-transfer",
             name: "Transfer",
             color: "blue",
             isShown: (course) => {
@@ -101,23 +101,25 @@ export function CoursesListView(props) {
             </Table.Header>
             <Table.Body>
                 { props.courses.map(c => 
-                <Table.Row>
+                <Table.Row key={`course-${c.id}`}>
                     <Table.Cell>{c.name}</Table.Cell>
                     <Table.Cell>{!(moment(c.startDate).diff(moment(), 'seconds') > 0) ? "Yes" : "No"}</Table.Cell>
                     <Table.Cell>{specialties[c.targetSpeciality]}</Table.Cell>
                     <Table.Cell>{moment(c.startDate).format("YYYY-MM-DD")}</Table.Cell>
                     <Table.Cell>{buildButtonsList(c).map(b => b.icon ?
                     <Button
+                        key={b.key}
                         color={b.color}
                         onClick={(event) => b.onClick(event, c)}
                         icon={b.icon ? b.icon : "none"}
-                        floated={b.floated ? b.floated : false}
+                        floated={b.floated ? b.floated : 'left'}
                     /> :
                     <Button
+                        key={b.key}
                         color={b.color}
                         onClick={(event) => b.onClick(event, c)}
                         content={b.icon ? false : b.name}
-                        floated={b.floated ? b.floated : false}
+                        floated={b.floated ? b.floated : 'left'}
                     />)}</Table.Cell>
                 </Table.Row>)
                 }

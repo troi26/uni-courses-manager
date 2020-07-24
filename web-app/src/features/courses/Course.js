@@ -385,12 +385,13 @@ export const Course = () => {
                         <h1 style={{
                             color: 'white'
                         }}>{course.name}
-                        <Button floated={"right"} icon={"edit"} onClick={() => {
+                        { (logged.roles.includes(roles.ADMIN) || course.owner === logged.id) &&
+                            <Button floated={"right"} icon={"edit"} onClick={() => {
                             setEditingData({
                                 value: editedValues.name
                             })
                             setEditField("name")
-                        }}></Button></h1>
+                        }}></Button>}</h1>
                         </Grid.Column>
                     </Grid.Row>
                     <Table celled padded inverted>
@@ -417,12 +418,13 @@ export const Course = () => {
                                     </Table.Cell>
                                 <Table.Cell>{ editedField !== "enrolmentLimit"
                                     ? <React.Fragment>{editedValues.enrolmentLimit}
-                                        <Button floated={"right"} icon={"edit"} onClick={() => {
+                                        { (logged.roles.includes(roles.ADMIN) || course.owner === logged.id) &&
+                                            <Button floated={"right"} icon={"edit"} onClick={() => {
                                             setEditingData({
                                                 value: editedValues.enrolmentLimit
                                             })
                                             setEditField("enrolmentLimit")
-                                        }}></Button>
+                                        }}></Button>}
                                     </React.Fragment>
                                     : <React.Fragment>
                                         <Input type={"number"} value={editingData.value} onChange={(e, {value}) => {
@@ -453,12 +455,13 @@ export const Course = () => {
 
                                 <Table.Cell>{ editedField !== "targetSpeciality"
                                     ? <React.Fragment>{specialties[editedValues.targetSpeciality]}
-                                        <Button floated={"right"} icon={"edit"} onClick={() => {
+                                        { (logged.roles.includes(roles.ADMIN) || course.owner === logged.id) &&
+                                            <Button floated={"right"} icon={"edit"} onClick={() => {
                                             setEditingData({
                                                 value: editedValues.targetSpeciality
                                             });
                                             setEditField("targetSpeciality")
-                                        }}></Button>
+                                        }}></Button>}
                                     </React.Fragment>
                                     : <React.Fragment>
                                         <Dropdown
@@ -494,12 +497,13 @@ export const Course = () => {
 
                                 <Table.Cell>{ editedField !== "startDate" 
                                     ? <React.Fragment>{ editedValues.startDate ? moment(editedValues.startDate).format("YYYY-MM-DD") : "NA" }
-                                        <Button floated={"right"} icon={"edit"} onClick={() => {
+                                        { (logged.roles.includes(roles.ADMIN) || course.owner === logged.id) &&
+                                            <Button floated={"right"} icon={"edit"} onClick={() => {
                                             setEditingData({
                                                 value: moment(editedValues.startDate)
                                             })
                                             setEditField("startDate")
-                                        }}></Button>
+                                        }}></Button>}
                                     </React.Fragment>
                                     : <React.Fragment>
                                         <Input
@@ -531,6 +535,7 @@ export const Course = () => {
                                 </Table.Cell>
                                 <Table.Cell textAlign={"center"}>
                                     <Checkbox checked={editedValues.hasEntranceTest}
+                                    disabled={!(logged.roles.includes(roles.ADMIN) || course.owner === logged.id)}
                                         onChange={(e, { checked }) => {
                                             setEditedValues({
                                                 ...editedValues,
@@ -565,19 +570,21 @@ export const Course = () => {
                                                     </Card.Description>
                                                 </Card.Content>
                                                 <Card.Content extra>
+                                                { (logged.roles.includes(roles.ADMIN) || course.owner === logged.id) &&
                                                     <Button floated={"right"} color={"red"} icon={"delete"}
                                                         onClick={() => {
                                                             handleLecturerDeletion(lect.id);
                                                         }}
-                                                    ></Button>
+                                                    ></Button>}
                                                 </Card.Content>
                                             </Card>
                                         </List.Item>)
                                         }
                                         <List.Item key={`lect-add`}>
-                                            <Button icon={"plus"} fluid color={"blue"} onClick={() => {
+                                            { (logged.roles.includes(roles.ADMIN) || course.owner === logged.id) &&
+                                                <Button icon={"plus"} fluid color={"blue"} onClick={() => {
                                                 setLecturerAddition({});
-                                            }} />
+                                            }} />}
                                         </List.Item>
                                     </List>
                                 </Table.Cell>
@@ -592,12 +599,13 @@ export const Course = () => {
                                 </Table.Cell>
                                 <Table.Cell>{ editedField !== "description"
                                     ? <React.Fragment>{`${editedValues.description.substr(0, 64)}...`}
-                                        <Button floated={"right"} icon={"edit"} onClick={() => {
+                                        { (logged.roles.includes(roles.ADMIN) || course.owner === logged.id) &&
+                                            <Button floated={"right"} icon={"edit"} onClick={() => {
                                             setEditingData({
                                                 value: editedValues.description
                                             })
                                             setEditField("description")
-                                        }}></Button>
+                                        }}></Button>}
                                     </React.Fragment>
                                     : <React.Fragment>
                                         <Label>{`${editingData.value.length}/${constraints.maxDescriptionLen}`}</Label>
@@ -630,12 +638,13 @@ export const Course = () => {
                                 </Table.Cell>
                                 <Table.Cell>{ editedField !== "name"
                                     ? <React.Fragment>{editedValues.name}
-                                        <Button floated={"right"} icon={"edit"} onClick={() => {
+                                        { (logged.roles.includes(roles.ADMIN) || course.owner === logged.id) &&
+                                            <Button floated={"right"} icon={"edit"} onClick={() => {
                                             setEditingData({
                                                 value: editedValues.name
                                             })
                                             setEditField("name")
-                                        }}></Button>
+                                        }}></Button>}
                                     </React.Fragment>
                                     : <React.Fragment>
                                         <Input label={`${editingData.value.length}/${constraints.maxNameLen}`} type={"text"} value={editingData.value} onChange={(e, {value}) => {
@@ -665,17 +674,21 @@ export const Course = () => {
                                 }
                                 </Table.Cell>
                                 <Table.Cell>
-                                    <Button color={"blue"} icon={"save"} floated={"right"} disabled={!isChanged()}
-                                        onClick={() => {
-                                            saveCourseChanges();
-                                        }}
-                                    />
-                                    <Button color={"grey"} icon={"undo"} floated={"right"} disabled={!isChanged()}
-                                        onClick={() => {
-                                            setEditedValues({
-                                                ...course
-                                            });
-                                    }}/>
+                                    { (logged.roles.includes(roles.ADMIN) || course.owner === logged.id) &&
+                                    <React.Fragment>
+                                        <Button color={"blue"} icon={"save"} floated={"right"} disabled={!isChanged()}
+                                            onClick={() => {
+                                                saveCourseChanges();
+                                            }}
+                                        />
+                                        <Button color={"grey"} icon={"undo"} floated={"right"} disabled={!isChanged()}
+                                            onClick={() => {
+                                                setEditedValues({
+                                                    ...course
+                                                });
+                                        }}/>
+                                    </React.Fragment>
+                                    }
                                 </Table.Cell>
                             </Table.Row>
                         </Table.Body>
