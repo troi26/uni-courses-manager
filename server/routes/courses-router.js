@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const db = require('../utils/db');
 const { Router } = require('express');
 const e = require('express');
-const { user } = require('../utils/db');
+const { user, course } = require('../utils/db');
 const sendErrorResponse = require("./utils").sendErrorResponse;
 const roles = require('../models/user').roles;
 const Course = db.course;
@@ -132,8 +132,9 @@ router.put('/:userId/:courseId', async function (req, res) {
                 message: "To change the owner of the course please use \"/api/course/transfer/{courseId}/{userFrom}/{userTo}\" call."
             }
         }
+        console.log(modifiedCourse);
 
-        await Course.findOneAndUpdate(modifiedCourse.id, modifiedCourse);
+        await Course.findByIdAndUpdate(courseId, modifiedCourse);
         res.json(modifiedCourse);
     } catch (err) {
         sendErrorResponse(req, res, 500, err.message, err);
