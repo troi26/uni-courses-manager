@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { List, Button, Table, Tab, Segment, Sticky } from 'semantic-ui-react';
 import { specialties } from './Course';
 import moment from 'moment';
-import { useHistory } from 'react-router-dom';
+import { NavLink, useHistory } from "react-router-dom";
 import { roles } from '../register/Register';
 // import { useSelector, useDispatch } from 'react-redux';
 // import {
@@ -85,6 +85,7 @@ export function CoursesListView(props) {
 
     console.log("BUTTONS: ", buttons.ROLE_STUDENT);
   return (
+    <Segment>
       <Segment style={{
           maxHeight: '30em',
           overflowY: 'scroll',
@@ -126,5 +127,18 @@ export function CoursesListView(props) {
             </Table.Body>
           </Table>
       </Segment>
+        <Table style={{
+            border: 'none'
+        }}>
+            <Table.Body>
+            { (props.logged.roles.includes(roles.TEACHER) || props.logged.roles.includes(roles.ADMIN)) &&
+                <Table.Row>
+                    <Table.Cell colspan={2}>
+                        <NavLink to={"/courses/create"}> <Button fluid icon={"plus"} /></NavLink></Table.Cell>
+                </Table.Row>
+            }
+            </Table.Body>
+        </Table>
+    </Segment>
   );
 }
