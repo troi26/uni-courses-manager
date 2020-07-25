@@ -2,10 +2,9 @@ import {Field, Form, Formik, FormikProps} from "formik";
 import {Button, Form as FormSemantic, Message, Grid, Segment} from "semantic-ui-react";
 import React from "react";
 import {useHistory} from "react-router";
-import { useState } from 'react';
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
-import { loginAttempt } from "./loginSlice"
+import { loginAttempt, selectLoginError } from "./loginSlice";
 
 
 const MyUsernameInput = ({field, form, ...props}) => {
@@ -39,10 +38,11 @@ const MyPasswordInput = ({field, form, ...props}) => {
 };
 
 export const Login = () => {
-    const [errors, setErrors] = useState(null);
 
     const history = useHistory();
     const dispatch = useDispatch();
+
+    const errors = useSelector(selectLoginError);
 
     return (
             <Formik
@@ -66,7 +66,7 @@ export const Login = () => {
                             }}>
                                 { errors &&
                                 <Message attached='bottom' error>
-                                    {errors}
+                                    {errors.message}
                                 </Message>
                                 }
                                 <FormSemantic inverted>
