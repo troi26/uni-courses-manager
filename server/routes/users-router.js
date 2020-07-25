@@ -43,7 +43,7 @@ router.post('/auth/register', async function (req, res) {
     } catch (err) {
         // reponse with the caught error
         console.log(err);
-        sendModeValidationErrorResponse(req, res, 500, `Server Error 500: ${err.message}`, err);
+        sendModeValidationErrorResponse(req, res, 500, `${err.message}`, err);
     }
 });
 
