@@ -25,7 +25,8 @@ const MyUsernameInput = ({field, form, ...props}) => {
             fluid
             label='Username'
             placeholder={"Enter username"}
-            error={form.errors.username ? {content: form.errors.username, pointing: "below"} : false}
+            error={form.errors.username ? {content: form.errors.username}
+                : props.errors ? props.errors.properties.message : false}
             value={form.values.username}
             onChange={e => form.setFieldValue('username', e.target.value)}
         />
@@ -41,7 +42,8 @@ const MyPasswordInput = ({field, form, ...props}) => {
             label='Password'
             type={"password"}
             placeholder={"Enter password"}
-            error={form.errors.password ? {content: form.errors.password, pointing: "below"} : false}
+            error={form.errors.password ? {content: form.errors.password}
+            : props.errors ? props.errors.properties.message : false}
             value={form.values.password}
             onChange={e => form.setFieldValue('password', e.target.value)}
         />
@@ -57,8 +59,9 @@ const MyFirstNameInput = ({field, form, ...props}) => {
             label='First name'
             type={"text"}
             placeholder={"e.g: Dimitar"}
-            error={form.errors.name ? {content: form.errors.name} : false}
-            value={form.values.name}
+            error={form.errors.firstName ? {content: form.errors.firstName}
+            : props.errors ? props.errors.properties.message : false}
+            value={form.values.firstName}
             onChange={e => form.setFieldValue('firstName', e.target.value)}
         />
     )
@@ -90,8 +93,9 @@ const MyLastNameInput = ({field, form, ...props}) => {
             label='Last name'
             type={"text"}
             placeholder={"e.g: Kolev"}
-            error={form.errors.name ? {content: form.errors.name} : false}
-            value={form.values.name}
+            error={form.errors.lastName ? {content: form.errors.lastName}
+            : props.errors ? props.errors.properties.message : false}
+            value={form.values.lastName}
             onChange={e => form.setFieldValue('lastName', e.target.value)}
         />
     )
@@ -157,11 +161,11 @@ export const Register = () => {
     const handleRegister = async (data) => {
         try {
             const response = await registerCall(data);
-            console.log("REGISTER SUCCESS: ", response.data);
+            console.log("REGISTER SUCCESS: ", response);
             history.push("/auth/login");
         } catch (err) {
             console.log("REGISTER ERROR: ", err);
-            setErrors(err.response.data.message);
+            setErrors(err.errors);
         }
     };
 
@@ -185,21 +189,16 @@ export const Register = () => {
                     <Grid textAlign="center"
                     >
                         <Grid.Column>
-                            <h1 style={{color: 'white'}}>Login</h1>
+                            <h1 style={{color: 'white'}}>Register</h1>
                             <Form style={{
                                 width: '50%',
                                 margin: 'auto',
                             }}>
-                                { errors &&
-                                <Message attached='bottom' error>
-                                    {errors}
-                                </Message>
-                                }
                                 <FormSemantic inverted>
-                                    <Field name={"firstName"} component={MyFirstNameInput}/>
-                                    <Field name={"lastName"} component={MyLastNameInput}/>
-                                    <Field name={"username"} component={MyUsernameInput} validate={validateUsername}/>
-                                    <Field name={"password"} component={MyPasswordInput} validate={validatePassword}/>
+                                    <Field name={"firstName"} component={MyFirstNameInput} errors={errors ? errors["firstName"] : null} />
+                                    <Field name={"lastName"} component={MyLastNameInput} errors={errors ? errors["lastName"] : null} />
+                                    <Field name={"username"} component={MyUsernameInput} errors={errors ? errors["username"] : null} validate={validateUsername}/>
+                                    <Field name={"password"} component={MyPasswordInput} errors={errors ? errors["password"] : null} validate={validatePassword}/>
                                     <Field name={"roles"} component={MyRolesInput} />
                                     <Button type={"submit"} color={"blue"}>Sing up</Button>
                                 </FormSemantic>
