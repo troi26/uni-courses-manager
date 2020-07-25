@@ -80,11 +80,6 @@ router.get("/:userId", authenticateTokenMiddleware, async (req, res) => {
     const userId = req.params.userId;
     const loggedId = req.user.sub;
     try {
-        if (loggedId !== userId) {
-            throw {
-                message: "User can not see other`s account information."
-            };
-        }
         const user = await User.findById(userId);
         if (!user) {
             throw {

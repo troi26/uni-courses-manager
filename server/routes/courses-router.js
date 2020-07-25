@@ -199,7 +199,7 @@ router.patch("/transfer/:courseId/:userFrom/:userTo", authenticateTokenMiddlewar
 
         course.owner = userToId;
 
-        await Course.findOneAndUpdate(courseId, course);
+        await Course.findByIdAndUpdate(courseId, course);
         res.json(course);
     } catch (err) {
         sendErrorResponse(req, res, 500, err.message, err);
@@ -234,7 +234,7 @@ router.delete('/:userId/:courseId', authenticateTokenMiddleware, async function 
             };
         }
 
-        const removed = await Course.findOneAndRemove({ _id: courseId });
+        const removed = await Course.findByIdAndRemove(courseId);
         res.json(removed);
     } catch (err) {
         sendErrorResponse(req, res, 500, err.message, err);
