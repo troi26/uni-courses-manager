@@ -7,6 +7,7 @@ const e = require('express');
 const sendErrorResponse = require("./utils").sendErrorResponse;
 const roles = require('../models/user').roles;
 const authenticateTokenMiddleware = require('../middlewares/auth.middleware');
+const { sendModeValidationErrorResponse } = require('./utils');
 const User = db.user;
 
 const router = express.Router();
@@ -42,7 +43,7 @@ router.post('/auth/register', async function (req, res) {
     } catch (err) {
         // reponse with the caught error
         console.log(err);
-        sendErrorResponse(req, res, 500, `Server error: ${err.message}`, err);
+        sendModeValidationErrorResponse(req, res, 500, `Server Error 500: ${err.message}`, err);
     }
 });
 

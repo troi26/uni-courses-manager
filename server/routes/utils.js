@@ -26,3 +26,15 @@ module.exports.replaceId = function (entity) {
     delete entity._id;
     return entity;
 }
+
+module.exports.sendModeValidationErrorResponse = (req, res, status, message, err) => {
+    // if(process.env.NODE_ENV !== 'development') {
+    //     err = undefined;
+    // }
+
+    res.status(status).json({
+        code: status,
+        message: message,
+        errors: err.errors
+    });
+}
