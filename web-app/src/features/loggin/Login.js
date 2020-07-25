@@ -53,18 +53,17 @@ export const Login = () => {
                 onSubmit={(values, actions) => {
                     dispatch(loginAttempt(values));
                 }}
-            >{(props: FormikProps<any>) => {
+            >{(props) => {
                 console.log(props);
                 return (
-                    <Grid textAlign="center"
-                    >
+                    <Grid textAlign="center">
                         <Grid.Column>
                             <h1 style={{color: 'white'}}>Login</h1>
                             <Form style={{
                                 width: '50%',
                                 margin: 'auto',
                             }}>
-                                { errors &&
+                                { (errors && errors.has) &&
                                 <Message attached='bottom' error>
                                     {errors.message}
                                 </Message>

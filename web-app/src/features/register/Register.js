@@ -183,7 +183,7 @@ export const Register = () => {
                 onSubmit={(values, actions) => {
                     handleRegister(values);
                 }}
-            >{(props: FormikProps<any>) => {
+            >{(props) => {
                 // console.log(props);
                 return (
                     <Grid textAlign="center"
