@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Segment, List, Dimmer, Loader, Table, Button, Input, Modal, Header, Icon, Divider, Tab } from 'semantic-ui-react';
+import { Segment, List, Dimmer, Loader, Table, Button, Input, Modal, Header, Icon, Divider, Tab, Label } from 'semantic-ui-react';
 import { loadUserById, modifyUser, passwordChange } from '../../api/users.api';
 import moment from 'moment';
 import { Logger } from 'mongodb';
@@ -9,9 +9,18 @@ import { selectLogged, changeToken } from '../loggin/loginSlice';
 import { loadCoursesOfStudent } from '../../api/courses.api';
 
 const invertedRoles = {
-    ROLE_ADMIN: "Admin",
-    ROLE_TEACHER: "Teacher",
-    ROLE_STUDENT: "Student",
+    ROLE_ADMIN: {
+        name: "Admin",
+        color: 'green'
+    },
+    ROLE_TEACHER: {
+        name: "Teacher",
+        color: 'yellow',
+    },
+    ROLE_STUDENT: {
+        name: "Student",
+        color: 'red'
+    },
 }
 export const User = () => {
 
@@ -48,6 +57,12 @@ export const User = () => {
 
     const handlePasswordChange = async () => {
         try {
+            if (passwordChangeModal.new !== passwordChangeModal.confirm) {
+                setPasswordError({
+                    type: 'confirm',
+                    message: "New password have to match the confirmation one" })
+                return;
+            }
             await passwordChange({
                 current: passwordChangeModal.current,
                 new: passwordChangeModal.new
@@ -57,7 +72,10 @@ export const User = () => {
             setPasswordError(null);
         } catch (err) {
             console.log("PASSWORD ERROR: ", err);
-            setPasswordError(err);
+            setPasswordError({
+                ...err,
+                type: 'validation',
+            });
         }
     }
 
@@ -68,7 +86,7 @@ export const User = () => {
                 <Modal.Content>
                     { passwordChangeModal &&
                     <React.Fragment>
-                        <Input error={passwordError} value={passwordChangeModal.current} 
+                        <Input error={(passwordError && passwordError.type === 'validation') ? passwordError : false} value={passwordChangeModal.current} 
                             onChange={(e, { value }) => {
                                 setPasswordChange({
                                     ...passwordChangeModal,
@@ -76,7 +94,7 @@ export const User = () => {
                                 })
                             }}
                         type={'password'} label={'Current'} />
-                        <Input value={passwordChangeModal.new} 
+                        <Input error={(passwordError && passwordError.type === 'confirm')}  value={passwordChangeModal.new} 
                             onChange={(e, { value }) => {
                                 setPasswordChange({
                                     ...passwordChangeModal,
@@ -84,7 +102,7 @@ export const User = () => {
                                 })
                             }}
                         type={"password"} label={'New password'} />
-                        <Input value={passwordChangeModal.confirm} 
+                        <Input error={(passwordError && passwordError.type === 'confirm') ? passwordError.message : false} value={passwordChangeModal.confirm} 
                             onChange={(e, { value }) => {
                                 setPasswordChange({
                                     ...passwordChangeModal,
@@ -132,7 +150,7 @@ export const User = () => {
                         <Table.Cell>{user.lastName}</Table.Cell>
                         <Table.Cell>{user.username}</Table.Cell>
                         <Table.Cell>{moment(user.createdDate).format("YYYY-MM-DD")}</Table.Cell>
-                        <Table.Cell>{user.roles.map(r => invertedRoles[r])}</Table.Cell>
+                        <Table.Cell>{user.roles.map(r => <Label color={invertedRoles[r].color}>{invertedRoles[r].name}</Label>)}</Table.Cell>
                         <Table.Cell><Button color={"yellow"}
                             onClick={() => {
                                 setPasswordChange({
