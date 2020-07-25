@@ -24,7 +24,7 @@ export function CoursesListView(props) {
             isShown: (course) => {
                 return course.enrolments.length < course.enrolmentLimit &&
                     moment(course.startDate).diff(moment(), 'seconds') > 0 &&
-                    moment(course.endDate).diff(moment(), 'seconds') > 0 &&
+                    (!course.endDate || moment(course.endDate).diff(moment(), 'seconds') > 0) &&
                     props.logged.roles.includes(roles.STUDENT) && !course.enrolments.includes(props.logged.id);
             },
             onClick: (event, course) => {
@@ -35,7 +35,9 @@ export function CoursesListView(props) {
             name: "Cancel",
             color: "red",
             isShown: (course) => {
-                return moment(course.startDate).diff(moment(), 'seconds') > 0 &&
+                return course.enrolments.length < course.enrolmentLimit &&
+                moment(course.startDate).diff(moment(), 'seconds') > 0 &&
+                (!course.endDate || moment(course.endDate).diff(moment(), 'seconds') > 0) &&
                 props.logged.roles.includes(roles.STUDENT) && course.enrolments.includes(props.logged.id);
             },
             onClick: (event, course) => {
