@@ -8,7 +8,8 @@ import { domain } from '../../api/server.connection';
 import { MyFiltersComponent } from './MyFiltersComponent';
 import { roles } from '../register/Register';
 import { Segment, Modal, Dropdown, Button, Icon, Header, Message } from 'semantic-ui-react';
-import { cancelEnrolmentIntoCourse, enrolIntoCourse, transferCourse, deleteCourse } from '../../api/courses.api';
+import { cancelEnrolmentIntoCourse, enrolIntoCourse, transferCourse, deleteCourse, modifyCourse } from '../../api/courses.api';
+import moment from 'moment';
 
 export function CoursesList(props) {
 
@@ -164,6 +165,16 @@ export function CoursesList(props) {
     }
   }
 
+  const handleCourseEnd = async (course) => {
+    try {
+      course.endDate = moment();
+      const modifiedData = await modifyCourse(course, course.owner, logged.token);
+      setCourses(courses.map(c => c.id !== course.id ? c : modifiedData));
+    } catch (err) {
+
+    }
+  }
+
   const setPeriodError = (error) => {
     setError(error);
     setTimeout(() => {
@@ -227,6 +238,7 @@ export function CoursesList(props) {
         onCourseEnrol={handleCourseEnrol}
         onCancelCourseEnrol={handleCancelCourseEnrol}
         onRemoveCourse={handleCourseRemoval}
+        onEndCourse={handleCourseEnd}
       />
       { error &&
         <Message negative>

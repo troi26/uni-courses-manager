@@ -22,8 +22,10 @@ export function CoursesListView(props) {
             name: "Enrol",
             color: "green",
             isShown: (course) => {
-                return moment(course.startDate).diff(moment(), 'seconds') > 0 &&
-                props.logged.roles.includes(roles.STUDENT) && !course.enrolments.includes(props.logged.id);
+                return course.enrolments.length < course.enrolmentLimit &&
+                    moment(course.startDate).diff(moment(), 'seconds') > 0 &&
+                    moment(course.endDate).diff(moment(), 'seconds') > 0 &&
+                    props.logged.roles.includes(roles.STUDENT) && !course.enrolments.includes(props.logged.id);
             },
             onClick: (event, course) => {
                 props.onCourseEnrol(props.logged.id, course.id);
@@ -43,10 +45,10 @@ export function CoursesListView(props) {
             key: "course-open",
             name: "Open",
             color: "grey",
+            icon: 'eye',
             isShown: (course) => {
                 console.log("OWNER_CHECK: ", course.owner, props.logged.id);
-                return props.logged.roles.includes(roles.ADMIN) ||
-                    props.logged.roles.includes(roles.TEACHER) && course.lecturers.includes(props.logged.id);
+                return true;
             },
             onClick: (event, course) => {
                 history.push(`/courses/${course.id}`);
@@ -77,6 +79,21 @@ export function CoursesListView(props) {
             onClick: (event, course) => {
                 props.onRemoveCourse(course);
             }
+        }, {
+            key: "course-end",
+            name: "End",
+            color: "black",
+            icon: "stop red",
+            floated: 'right',
+            isShown: (course) => {
+                console.log("OWNER_CHECK: ", course.owner, props.logged.id);
+                return moment().diff(moment(course.startDate), 'seconds') > 0 &&
+                (!course.endDate || moment(course.endDate).diff(moment(), 'seconds') > 0) &&
+                    (props.logged.roles.includes(roles.ADMIN) || course.owner === props.logged.id);
+            },
+            onClick: (event, course) => {
+                props.onEndCourse(course);
+            }
         }];
 
     const buildButtonsList = (course) => {
@@ -95,6 +112,7 @@ export function CoursesListView(props) {
                 <Table.Row>
                     <Table.HeaderCell singleLine>Name</Table.HeaderCell>
                     <Table.HeaderCell singleLine>Started</Table.HeaderCell>
+                    <Table.HeaderCell singleLine>Ended</Table.HeaderCell>
                     <Table.HeaderCell singleLine>Specialty</Table.HeaderCell>
                     <Table.HeaderCell singleLine>Start date</Table.HeaderCell>
                     <Table.HeaderCell singleLine>Options</Table.HeaderCell>
@@ -104,7 +122,8 @@ export function CoursesListView(props) {
                 { props.courses.map(c => 
                 <Table.Row key={`course-${c.id}`}>
                     <Table.Cell>{c.name}</Table.Cell>
-                    <Table.Cell>{!(moment(c.startDate).diff(moment(), 'seconds') > 0) ? "Yes" : "No"}</Table.Cell>
+                    <Table.Cell>{!(moment(c.startDate).diff(moment(), 'seconds') > 0) ? "YES" : "NO"}</Table.Cell>
+                    <Table.Cell>{c.endDate ? (!(moment(c.endDate).diff(moment(), 'seconds') > 0) ? "YES" : "NO") : "NO"}</Table.Cell>
                     <Table.Cell>{specialties[c.targetSpeciality]}</Table.Cell>
                     <Table.Cell>{moment(c.startDate).format("YYYY-MM-DD")}</Table.Cell>
                     <Table.Cell>{buildButtonsList(c).map(b => b.icon ?

@@ -144,7 +144,11 @@ export const Course = () => {
                     <Card.Content extra>
                         <Segment padded={'small'}>
                             {e.grade ? e.grade.value : "-"}
-                            <Button floated={'right'} color={"red"} icon={"pencil alternate"}
+                        </Segment>
+                            { (logged.roles.includes(roles.ADMIN) ||
+                                logged.id === course.owner ||
+                                course.lecturers.includes(logged.id)) &&
+                                <Button floated={'right'} color={"red"} icon={"pencil alternate"}
                                 onClick={() => {
                                     setGradingDetails({
                                         userId: e.id,
@@ -155,7 +159,7 @@ export const Course = () => {
                                         gradeId: e.grade ? e.grade.id : null,
                                     })
                                 }}></Button>
-                        </Segment>
+                            }
                         { logged.id === course.owner &&
                             <Button fluid floated={"right"} color={"red"} icon={"delete"}
                             onClick={() => handleStudentEnrolmentCancel(e.id)}
@@ -295,7 +299,7 @@ export const Course = () => {
                 startDate: editedValues.startDate,
                 lecturers: editedValues.lecturers,
             };
-            const response = await modifyCourse(modified, logged.id, logged.token);
+            const response = await modifyCourse(modified, modified.owner, logged.token);
             setCourse(editedValues);
         } catch (err) {
             console.error(err);

@@ -151,7 +151,8 @@ export const User = () => {
                         <Table.Cell>{user.username}</Table.Cell>
                         <Table.Cell>{moment(user.createdDate).format("YYYY-MM-DD")}</Table.Cell>
                         <Table.Cell>{user.roles.map(r => <Label color={invertedRoles[r].color}>{invertedRoles[r].name}</Label>)}</Table.Cell>
-                        <Table.Cell><Button color={"yellow"}
+                        { logged.id === user.id &&
+                            <Table.Cell><Button color={"yellow"}
                             onClick={() => {
                                 setPasswordChange({
                                     current: "",
@@ -160,6 +161,7 @@ export const User = () => {
                                 });
                             }}
                         >Change password</Button></Table.Cell>
+                        }
                     </Table.Body>
                 </Table>
                     <h1>Enroled courses</h1>
