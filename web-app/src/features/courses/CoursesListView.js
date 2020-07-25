@@ -115,6 +115,7 @@ export function CoursesListView(props) {
                     <Table.HeaderCell singleLine>Ended</Table.HeaderCell>
                     <Table.HeaderCell singleLine>Specialty</Table.HeaderCell>
                     <Table.HeaderCell singleLine>Start date</Table.HeaderCell>
+                    <Table.HeaderCell singleLine>Free places</Table.HeaderCell>
                     <Table.HeaderCell singleLine>Options</Table.HeaderCell>
                 </Table.Row>
             </Table.Header>
@@ -126,6 +127,7 @@ export function CoursesListView(props) {
                     <Table.Cell>{c.endDate ? (!(moment(c.endDate).diff(moment(), 'seconds') > 0) ? "YES" : "NO") : "NO"}</Table.Cell>
                     <Table.Cell>{specialties[c.targetSpeciality]}</Table.Cell>
                     <Table.Cell>{moment(c.startDate).format("YYYY-MM-DD")}</Table.Cell>
+                    <Table.Cell>{`${c.enrolmentLimit - c.enrolments.length}/${c.enrolmentLimit}`}</Table.Cell>
                     <Table.Cell>{buildButtonsList(c).map(b => b.icon ?
                     <Button
                         key={b.key}
