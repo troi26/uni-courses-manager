@@ -45,6 +45,7 @@ export const Login = () => {
     const errors = useSelector(selectLoginError);
 
     return (
+        <Segment inverted>
             <Formik
                 initialValues={{
                     username: "",
@@ -79,5 +80,6 @@ export const Login = () => {
                 )
             }}
             </Formik>
+        </Segment>
     );
 };

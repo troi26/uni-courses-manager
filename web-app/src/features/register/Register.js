@@ -154,6 +154,7 @@ const MyRolesInput = ({field, form, ...props}) => {
 
 export const Register = () => {
     const [errors, setErrors] = useState(null);
+    const [serverErr, setServerErrors] = useState(null);
 
     const history = useHistory();
     // const dispatch = useDispatch();
@@ -165,11 +166,21 @@ export const Register = () => {
             history.push("/auth/login");
         } catch (err) {
             console.log("REGISTER ERROR: ", err);
-            setErrors(err.errors);
+            if (err.errors) {
+                setErrors(err.errors);
+            } else {
+                setServerErrors(err.message);
+            }
         }
     };
 
     return (
+        <Segment inverted>
+            {serverErr &&
+                <Message negative>
+                    <Message.Header>{serverErr}</Message.Header>
+                </Message>
+            }
             <Formik
                 initialValues={{
                     // Once the username is set wont be able to change
@@ -198,7 +209,7 @@ export const Register = () => {
                                     <Field name={"firstName"} component={MyFirstNameInput} errors={errors ? errors["firstName"] : null} />
                                     <Field name={"lastName"} component={MyLastNameInput} errors={errors ? errors["lastName"] : null} />
                                     <Field name={"username"} component={MyUsernameInput} errors={errors ? errors["username"] : null} validate={validateUsername}/>
-                                    <Field name={"password"} component={MyPasswordInput} errors={errors ? errors["password"] : null} validate={validatePassword}/>
+                                    <Field name={"password"} component={MyPasswordInput} errors={errors ? errors["password"] : null}/>
                                     <Field name={"roles"} component={MyRolesInput} />
                                     <Button type={"submit"} color={"blue"}>Sing up</Button>
                                 </FormSemantic>
@@ -208,5 +219,6 @@ export const Register = () => {
                 )
             }}
             </Formik>
+        </Segment>
     );
 };
