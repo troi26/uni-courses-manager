@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Segment, List, Dimmer, Loader, Table, Button, Input, Modal, Header, Icon, Divider, Tab, Label } from 'semantic-ui-react';
+import { Segment, List, Dimmer, Loader, Table, Button, Input, Modal, Header, Icon, Divider, Tab, Label, Message } from 'semantic-ui-react';
 import { loadUserById, modifyUser, passwordChange } from '../../api/users.api';
 import moment from 'moment';
 import { Logger } from 'mongodb';
@@ -31,6 +31,7 @@ export const User = () => {
     const [user, setUser] = useState();
     const [courses, setCourses] = useState([]);
     const [error, setError] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(null);
     const [passwordError, setPasswordError] = useState(null);
     const [passwordChangeModal, setPasswordChange] = useState(null);
 
@@ -55,6 +56,13 @@ export const User = () => {
         loadUser();
     }, []);
 
+    const setPeriodSuccessMessage = (msg) => {
+        setSuccessMessage(msg);
+        setTimeout(() => {
+        setSuccessMessage(null);
+        }, 4000);
+    }
+
     const handlePasswordChange = async () => {
         try {
             if (passwordChangeModal.new !== passwordChangeModal.confirm) {
@@ -69,6 +77,7 @@ export const User = () => {
             }, logged.id, logged.token);
             dispatch(changeToken(logged.token));
             setPasswordChange(null);
+            setPeriodSuccessMessage("Password has been successfully changed.");
             setPasswordError(null);
         } catch (err) {
             console.log("PASSWORD ERROR: ", err);
@@ -81,6 +90,11 @@ export const User = () => {
 
     return (
         <Segment>
+            { successMessage &&
+            <Message positive>
+                <Message.Header>{successMessage}</Message.Header>
+            </Message>
+            }
             <Modal open={passwordChangeModal !== null} closeIcon onClose={() => setPasswordChange(null)}>
                 <Header icon='browser' content={"Password change"} />
                 <Modal.Content>
