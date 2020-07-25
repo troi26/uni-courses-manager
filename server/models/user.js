@@ -10,10 +10,10 @@ module.exports.roles = roles;
 
 const schema = new mongoose.Schema({
     // Once the username is set wont be able to change
-    username: { type: String, unique: true, required: true },
-    password: { type: String, required: true },
-    firstName: { type: String, required: true },
-    lastName: { type: String, required: true },
+    username: { type: String, unique: true, required: [true, "Username is required"] },
+    password: { type: String, required: [true, "Password is required"] },
+    firstName: { type: String, required: [true, "First name is required"] },
+    lastName: { type: String, required: [true, "Last name is required"] },
     createdDate: { type: Date, default: Date.now },
     roles: {
         type: [{ type: String, enum: Object.values(roles)}],
