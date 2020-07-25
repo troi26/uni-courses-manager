@@ -250,7 +250,7 @@ export const CourseCreator = () => {
                 name: editedValues.name,
                 owner: editedValues.owner,
                 description: editedValues.description,
-                enrolmentLimit: course.enrolmentLimit,
+                enrolmentLimit: editedValues.enrolmentLimit,
                 hasEntranceTest: editedValues.hasEntranceTest,
                 targetSpeciality: editedValues.targetSpeciality,
                 enrolments: editedValues.enrolments,
@@ -340,6 +340,7 @@ export const CourseCreator = () => {
                 </Modal.Actions>
             </Modal>
             { course && !loading &&
+                <Segment inverted>
                 <Grid style={{
                     margin: 0
                 }}>
@@ -347,7 +348,7 @@ export const CourseCreator = () => {
                         <Grid.Column>
                         <h1 style={{
                             color: 'white'
-                        }}>{course.name}</h1>
+                        }}>{editedValues.name}</h1>
                         </Grid.Column>
                     </Grid.Row>
                     <Table celled padded inverted>
@@ -638,6 +639,7 @@ export const CourseCreator = () => {
                         </Table.Body>
                     </Table>
                 </Grid>
+                </Segment>
             }
             { loading &&
                 <React.Fragment>

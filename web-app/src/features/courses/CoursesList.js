@@ -232,6 +232,16 @@ export function CoursesList(props) {
       </Modal>
       <Segment>
         <h1>Courses</h1>
+        { error &&
+          <Message negative>
+            <Message.Header>{error.message}</Message.Header>
+          </Message>
+        }
+        { successMessage &&
+          <Message positive>
+            <Message.Header>{successMessage}</Message.Header>
+          </Message>
+        }
         <MyFiltersComponent
           teachersList={users.filter(u => u.roles.includes(roles.TEACHER))}
           lecturers={filterByLecturers}
@@ -253,16 +263,6 @@ export function CoursesList(props) {
         onRemoveCourse={handleCourseRemoval}
         onEndCourse={handleCourseEnd}
       />
-      { error &&
-        <Message negative>
-          <Message.Header>{error.message}</Message.Header>
-        </Message>
-      }
-      { successMessage &&
-        <Message positive>
-          <Message.Header>{successMessage}</Message.Header>
-        </Message>
-      }
     </React.Fragment>
   );
 }
