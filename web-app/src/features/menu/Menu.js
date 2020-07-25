@@ -49,13 +49,15 @@ export const HeaderMenu = (props) => {
                                 onClick={() => setActiveItem("courses")}
                             >Courses</Menu.Item>
                         </NavLink>
-                        <NavLink to={"/courses/create"}>
-                            <Menu.Item
-                                name='courses-create'
-                                active={activeItem === 'courses-create'}
-                                onClick={() => setActiveItem("courses-create")}
-                            >New course</Menu.Item>
-                        </NavLink>
+                        { (logged.roles.includes(roles.ADMIN) || logged.roles.includes(roles.TEACHER)) &&
+                            <NavLink to={"/courses/create"}>
+                                <Menu.Item
+                                    name='courses-create'
+                                    active={activeItem === 'courses-create'}
+                                    onClick={() => setActiveItem("courses-create")}
+                                >New course</Menu.Item>
+                            </NavLink>
+                        }
                         {/* <NavLink to={"/courses/:userId"}>
                             <Menu.Item
                                 name='my-courses'
