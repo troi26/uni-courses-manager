@@ -105,11 +105,12 @@ router.delete("/:userId", authenticateTokenMiddleware, async (req, res) => {
         } else {
             throw {
                 message: "Not authorized to delete users",
+                customCode: 401,
             };
         } 
             
     } catch (err) {
-        sendErrorResponse(req, res, 500, "Not authorized to delete a user other than yourself!", err);
+        sendErrorResponse(req, res, err.customCode ? err.customCode : 500, "Not authorized to delete a user other than yourself!", err);
 
     }
 });
@@ -118,10 +119,20 @@ router.delete("/:userId", authenticateTokenMiddleware, async (req, res) => {
 router.put("/:userId", authenticateTokenMiddleware, async (req, res) => {
     const newData = req.body;
     const userId = req.params.userId;
+    const loggedId = req.user.sub;
     try {
         // Check if new password send
         const user = await User.findById(userId);
+        const logged = await User.findById(loggedId);
         // Username changes are not permitted
+
+        if (loggedId !== userId && !logged.roles.includes(roles.ADMIN)) {
+            throw {
+                message: "Not authorized for this action.",
+                customCode: 401,
+            }
+        }
+
         if (newData.username !== user.username) {
             throw {
                 message: "'Username' can not be changed!"
@@ -137,7 +148,7 @@ router.put("/:userId", authenticateTokenMiddleware, async (req, res) => {
 
         res.json(newData);
     } catch (err) {
-        sendErrorResponse(req, res, 500, err.message, err);
+        sendErrorResponse(req, res, err.customCode ? err.customCode : 500, err.message, err);
     }
 });
 

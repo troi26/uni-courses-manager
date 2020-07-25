@@ -26,12 +26,15 @@ router.post('/', authenticateTokenMiddleware, async function (req, res) {
     // validate user`s data
     const course = req.body;
     const userId = course.owner;
+    const loggedId = req.user.sub;
     try {
         console.log(userId);
         const user = await User.findById(userId);
-        if (!user.roles.includes(roles.ADMIN) && !user.roles.includes(roles.TEACHER)) {
+        const logged = await User.findById(loggedId);
+        if (!logged.roles.includes(roles.ADMIN) && !logged.roles.includes(roles.TEACHER)) {
             throw {
-                message: "Not authorized to add courses."
+                message: "Not authorized to add courses.",
+                customCode: 401,
             }
         }
         if (!Object.keys(specialties).includes(course.targetSpeciality)) {
@@ -58,7 +61,7 @@ router.post('/', authenticateTokenMiddleware, async function (req, res) {
     } catch (err) {
         // reponse with the caught error
         console.log(err);
-        sendErrorResponse(req, res, 500, `Server error: ${err.message}`, err);
+        sendErrorResponse(req, res, err.customCode ? err.customCode : 500, `Server error: ${err.message}`, err);
     }
 });
 
@@ -138,7 +141,8 @@ router.put('/:userId/:courseId', authenticateTokenMiddleware, async function (re
         
         if (loggedId !== modifiedCourse.owner && !logged.roles.includes(roles.ADMIN)) {
             throw {
-                message: "Not authorized for this action."
+                message: "Not authorized for this action.",
+                customCode: 401,
             };
         }
         console.log(courseId);
@@ -158,7 +162,7 @@ router.put('/:userId/:courseId', authenticateTokenMiddleware, async function (re
         await Course.findByIdAndUpdate(courseId, modifiedCourse);
         res.json(modifiedCourse);
     } catch (err) {
-        sendErrorResponse(req, res, 500, err.message, err);
+        sendErrorResponse(req, res, err.customCode ? err.customCode : 500, err.message, err);
     }
 });
 
@@ -193,7 +197,8 @@ router.patch("/transfer/:courseId/:userFrom/:userTo", authenticateTokenMiddlewar
     
         if (!(loggedId === userFromId && userFromId === course.owner) && !logged.roles.includes(roles.ADMIN)) {
             throw {
-                message: "Not authorized for this action."
+                message: "Not authorized for this action.",
+                customCode: 401,
             }
         }
 
@@ -202,7 +207,7 @@ router.patch("/transfer/:courseId/:userFrom/:userTo", authenticateTokenMiddlewar
         await Course.findByIdAndUpdate(courseId, course);
         res.json(course);
     } catch (err) {
-        sendErrorResponse(req, res, 500, err.message, err);
+        sendErrorResponse(req, res, err.customCode ? err.customCode : 500, err.message, err);
     }
 });
 
@@ -218,7 +223,8 @@ router.delete('/:userId/:courseId', authenticateTokenMiddleware, async function 
         
         if (!(loggedId === userId && userId !== course.owner) && !logged.roles.includes(roles.ADMIN)) {
             throw {
-                message: "Not authorized for this action."
+                message: "Not authorized for this action.",
+                customCode: 401,
             };
         }
 
@@ -237,7 +243,7 @@ router.delete('/:userId/:courseId', authenticateTokenMiddleware, async function 
         const removed = await Course.findByIdAndRemove(courseId);
         res.json(removed);
     } catch (err) {
-        sendErrorResponse(req, res, 500, err.message, err);
+        sendErrorResponse(req, res, err.customCode ? err.customCode : 500, err.message, err);
     }
 });
 
@@ -268,6 +274,7 @@ router.patch("/enrol/:courseId/:userId", authenticateTokenMiddleware, async func
             loggedId !== course.owner) {
             throw {
                 message: "Not authorized for this action.",
+                customCode: 401,
             };
         }
 
@@ -297,7 +304,7 @@ router.patch("/enrol/:courseId/:userId", authenticateTokenMiddleware, async func
         res.json(course);
 
     } catch (err) {
-        sendErrorResponse(req, res, 500, err.message, err);
+        sendErrorResponse(req, res, err.customCode ? err.customCode : 500, err.message, err);
     }
 });
 
@@ -322,6 +329,7 @@ router.patch("/cancelenrolment/:courseId/:userId", authenticateTokenMiddleware, 
             loggedId !== course.owner) {
             throw {
                 message: "Not authorized for this action.",
+                customCode: 401,
             };
         }
 
@@ -336,7 +344,7 @@ router.patch("/cancelenrolment/:courseId/:userId", authenticateTokenMiddleware, 
         await Course.findByIdAndUpdate(course._id, course)
         res.json(course);
     } catch (err) {
-        sendErrorResponse(req, res, 500, err.message, err);
+        sendErrorResponse(req, res, err.customCode ? err.customCode : 500, err.message, err);
     }
 });
 
