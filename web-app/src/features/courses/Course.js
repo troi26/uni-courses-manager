@@ -388,14 +388,7 @@ export const Course = () => {
                         <Grid.Column>
                         <h1 style={{
                             color: 'white'
-                        }}>{course.name}
-                        { (logged.roles.includes(roles.ADMIN) || course.owner === logged.id) &&
-                            <Button floated={"right"} icon={"edit"} onClick={() => {
-                            setEditingData({
-                                value: editedValues.name
-                            })
-                            setEditField("name")
-                        }}></Button>}</h1>
+                        }}>{course.name}</h1>
                         </Grid.Column>
                     </Grid.Row>
                     <Table celled padded inverted>

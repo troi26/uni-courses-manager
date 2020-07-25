@@ -347,13 +347,7 @@ export const CourseCreator = () => {
                         <Grid.Column>
                         <h1 style={{
                             color: 'white'
-                        }}>{course.name}
-                        <Button floated={"right"} icon={"edit"} onClick={() => {
-                            setEditingData({
-                                value: editedValues.name
-                            })
-                            setEditField("name")
-                        }}></Button></h1>
+                        }}>{course.name}</h1>
                         </Grid.Column>
                     </Grid.Row>
                     <Table celled padded inverted>

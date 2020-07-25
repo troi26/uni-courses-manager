@@ -19,6 +19,7 @@ export function CoursesList(props) {
   const [courses, setCourses] = useState([]);
   const [users, setUsers] = useState([]);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   const [filterByLecturers, setFilterByLecturers] = useState([]);
   const [filterByName, setFilterByName] = useState("");
@@ -117,6 +118,7 @@ export function CoursesList(props) {
           }
           : c)
           setCourses(newCourses);
+          setPeriodSuccessMessage("Course has been successfully transfered.");
       } catch(err) {
         setPeriodError(err)
         console.log(err);
@@ -133,6 +135,7 @@ export function CoursesList(props) {
           }
           : c)
           setCourses(newCourses);
+          setPeriodSuccessMessage("Successfully enroled into the course.");
       } catch(err) {
         setPeriodError(err)
         console.log(err);
@@ -149,6 +152,7 @@ export function CoursesList(props) {
           }
           : c)
         setCourses(newCourses);
+        setPeriodSuccessMessage("Successfully enrol canceling.");
       } catch(err) {
         setPeriodError(err)
         console.log(err);
@@ -159,6 +163,7 @@ export function CoursesList(props) {
     try {
       await deleteCourse(course.id, logged.id, logged.token);
       setCourses(courses.filter(c => c.id !== course.id));
+      setPeriodSuccessMessage("Course has been removed successfully.");
     } catch (err) {
       setPeriodError(err)
       console.log(err);
@@ -170,6 +175,7 @@ export function CoursesList(props) {
       course.endDate = moment();
       const modifiedData = await modifyCourse(course, course.owner, logged.token);
       setCourses(courses.map(c => c.id !== course.id ? c : modifiedData));
+      setPeriodSuccessMessage("Course has been finilized successfully.");
     } catch (err) {
 
     }
@@ -179,6 +185,13 @@ export function CoursesList(props) {
     setError(error);
     setTimeout(() => {
       setError(null);
+    }, 4000);
+  }
+
+  const setPeriodSuccessMessage = (msg) => {
+    setSuccessMessage(msg);
+    setTimeout(() => {
+      setSuccessMessage(null);
     }, 4000);
   }
 
@@ -243,6 +256,11 @@ export function CoursesList(props) {
       { error &&
         <Message negative>
           <Message.Header>{error.message}</Message.Header>
+        </Message>
+      }
+      { successMessage &&
+        <Message positive>
+          <Message.Header>{successMessage}</Message.Header>
         </Message>
       }
     </React.Fragment>
