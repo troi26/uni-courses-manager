@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 // import { useSelector, useDispatch } from 'react-redux';
 import { CoursesListView } from "./CoursesListView";
 import axios from 'axios';
@@ -7,7 +7,7 @@ import { selectLogged } from '../loggin/loginSlice';
 import { domain } from '../../api/server.connection';
 import { MyFiltersComponent } from './MyFiltersComponent';
 import { roles } from '../register/Register';
-import { Segment, Modal, Dropdown, Button, Icon, Header } from 'semantic-ui-react';
+import { Segment, Modal, Dropdown, Button, Icon, Header, Message } from 'semantic-ui-react';
 import { cancelEnrolmentIntoCourse, enrolIntoCourse, transferCourse, deleteCourse } from '../../api/courses.api';
 
 export function CoursesList(props) {
@@ -17,6 +17,7 @@ export function CoursesList(props) {
   const [coursesLoaded, setCoursesLoaded] = useState(false);
   const [courses, setCourses] = useState([]);
   const [users, setUsers] = useState([]);
+  const [error, setError] = useState(null);
 
   const [filterByLecturers, setFilterByLecturers] = useState([]);
   const [filterByName, setFilterByName] = useState("");
@@ -24,21 +25,25 @@ export function CoursesList(props) {
 
   const logged = useSelector(selectLogged);
 
-  const loadUsers = async () => {
-    try {
-      if (!usersLoaded) {
-        setUsersLoaded(true);
-        const config = { headers: {Authorization: `Bearer ${logged.token}`}};
-        const response = await axios(`${domain}/api/users`, config);
-        console.log(response.data);
-        setUsers(response.data);
+  useEffect(() => {
+  
+    const loadUsers = async () => {
+      try {
+        if (!usersLoaded) {
+          setUsersLoaded(true);
+          const config = { headers: {Authorization: `Bearer ${logged.token}`}};
+          const response = await axios(`${domain}/api/users`, config);
+          console.log(response.data);
+          setUsers(response.data);
+        }
+      } catch (err) {
+        setPeriodError(err)
+        setUsersLoaded(false);
       }
-    } catch (err) {
-      setUsersLoaded(false);
     }
-  }
-
-  loadUsers();
+  
+    loadUsers();
+  }, []);
 
   const loadCourses = async () => {
     try {
@@ -50,6 +55,7 @@ export function CoursesList(props) {
         setCourses(response.data);
       }
     } catch (err) {
+      setPeriodError(err)
       setCoursesLoaded(false);
     }
   }
@@ -111,6 +117,7 @@ export function CoursesList(props) {
           : c)
           setCourses(newCourses);
       } catch(err) {
+        setPeriodError(err)
         console.log(err);
       }
   };
@@ -126,6 +133,7 @@ export function CoursesList(props) {
           : c)
           setCourses(newCourses);
       } catch(err) {
+        setPeriodError(err)
         console.log(err);
       }
   };
@@ -141,6 +149,7 @@ export function CoursesList(props) {
           : c)
         setCourses(newCourses);
       } catch(err) {
+        setPeriodError(err)
         console.log(err);
       }
   };
@@ -150,8 +159,16 @@ export function CoursesList(props) {
       await deleteCourse(course.id, logged.id, logged.token);
       setCourses(courses.filter(c => c.id !== course.id));
     } catch (err) {
+      setPeriodError(err)
       console.log(err);
     }
+  }
+
+  const setPeriodError = (error) => {
+    setError(error);
+    setTimeout(() => {
+      setError(null);
+    }, 4000);
   }
 
   return (
@@ -211,6 +228,11 @@ export function CoursesList(props) {
         onCancelCourseEnrol={handleCancelCourseEnrol}
         onRemoveCourse={handleCourseRemoval}
       />
+      { error &&
+        <Message negative>
+          <Message.Header>{error.message}</Message.Header>
+        </Message>
+      }
     </React.Fragment>
   );
 }
